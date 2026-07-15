@@ -1,15 +1,15 @@
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { ProfileCard } from "@/features/profile/components/profile-card";
+import { ProfileItem } from "@/features/profile/components/profile-item";
+import { auth } from "@/lib/auth";
 
 export default async function ProfilePage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black p-4">
-      <ProfileCard session={session} />
+    <main className="flex min-h-screen items-center justify-center p-4">
+      <ProfileItem session={session} />
     </main>
   );
 }
