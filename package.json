@@ -15,8 +15,10 @@
     "auth:generate": "pnpm dlx auth@latest generate --output src/lib/db/schema/auth-schema.ts"
   },
   "dependencies": {
+    "@ably/chat": "^1.4.0",
     "@base-ui/react": "^1.6.0",
     "@neondatabase/serverless": "^1.1.0",
+    "ably": "^2.24.0",
     "better-auth": "^1.6.23",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

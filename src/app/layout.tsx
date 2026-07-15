@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "next-themes";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Provider } from "../lib/providers/provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,16 +31,12 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <ThemeProvider
-          attribute="class"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <Provider>
           <div className="fixed top-4 right-4 z-50">
             <ThemeToggle />
           </div>
           {children}
-        </ThemeProvider>
+        </Provider>
       </body>
     </html>
   );
