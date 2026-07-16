@@ -1,3 +1,4 @@
+import { MessageCircleIcon } from "lucide-react";
 import {
   Empty,
   EmptyDescription,
@@ -5,7 +6,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { MessageCircleIcon } from "lucide-react";
 
 export default function Page() {
   return (
@@ -16,7 +16,7 @@ export default function Page() {
         </EmptyMedia>
         <EmptyTitle>Select a chat</EmptyTitle>
         <EmptyDescription>
-          Choose a conversation from the sidebar to get started.
+          Start a conversation to get started.
         </EmptyDescription>
       </EmptyHeader>
     </Empty>
