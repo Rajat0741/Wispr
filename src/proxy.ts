@@ -12,8 +12,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Add any routes that require authentication here.
-  // This is a fast cookie-presence check; the page itself does a full DB session
-  // validation as a second layer of protection.
-  matcher: ["/profile/:path*"],
+  matcher: ["/profile/:path*", "/connection/:path*", "/chat/:path*"],
 };

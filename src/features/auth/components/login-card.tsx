@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
 
 export function LoginCard() {
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +48,7 @@ export function LoginCard() {
             {error}
           </p>
         )}
-        <button
+        <Button
           type="button"
           onClick={handleGoogleLogin}
           disabled={isLoading}
@@ -59,7 +60,7 @@ export function LoginCard() {
             <FcGoogle aria-hidden="true" className="size-5" />
           )}
           <span>{isLoading ? "Signing in..." : "Continue with Google"}</span>
-        </button>
+        </Button>
       </CardContent>
     </Card>
   );
