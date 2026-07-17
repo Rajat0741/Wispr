@@ -1,7 +1,7 @@
 import {
-    ResizableHandle,
-    ResizablePanel,
-    ResizablePanelGroup,
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { ChatList } from "@/features/chat-list/components/chat-list";
 

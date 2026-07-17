@@ -21,6 +21,9 @@ export async function POST() {
     return NextResponse.json(tokenRequest);
   } catch (err) {
     console.error("Ably token creation failed:", err);
-    return NextResponse.json({ error: "Failed to create token" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create token" },
+      { status: 500 },
+    );
   }
 }

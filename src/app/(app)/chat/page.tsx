@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SendIcon } from "lucide-react";
@@ -9,9 +8,24 @@ import { Input } from "@/components/ui/input";
 
 const messages = [
   { id: 1, text: "Hey! How are you?", sender: "other", timestamp: "10:30 AM" },
-  { id: 2, text: "I'm doing great, thanks for asking!", sender: "user", timestamp: "10:31 AM" },
-  { id: 3, text: "That's awesome! Want to grab coffee?", sender: "other", timestamp: "10:32 AM" },
-  { id: 4, text: "Sure! When are you free?", sender: "user", timestamp: "10:33 AM" },
+  {
+    id: 2,
+    text: "I'm doing great, thanks for asking!",
+    sender: "user",
+    timestamp: "10:31 AM",
+  },
+  {
+    id: 3,
+    text: "That's awesome! Want to grab coffee?",
+    sender: "other",
+    timestamp: "10:32 AM",
+  },
+  {
+    id: 4,
+    text: "Sure! When are you free?",
+    sender: "user",
+    timestamp: "10:33 AM",
+  },
 ];
 
 export default function Page() {
@@ -47,7 +61,9 @@ export default function Page() {
                 }`}
               >
                 <p>{message.text}</p>
-                <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
+                <span className="text-xs opacity-70 mt-1 block">
+                  {message.timestamp}
+                </span>
               </div>
             </div>
           ))}

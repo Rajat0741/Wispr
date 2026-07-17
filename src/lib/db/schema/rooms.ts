@@ -70,9 +70,7 @@ export const groupInfo = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [
-    index("idx_group_info_created_by").on(table.createdBy),
-  ],
+  (table) => [index("idx_group_info_created_by").on(table.createdBy)],
 );
 
 export const roomMembers = pgTable(

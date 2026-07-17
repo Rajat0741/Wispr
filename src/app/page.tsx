@@ -40,7 +40,9 @@ export default async function Home() {
                 href="https://better-auth.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "lg" }),
+                )}
               >
                 Learn More
               </Link>

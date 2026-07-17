@@ -7,12 +7,11 @@ import { ChatMessageEventType } from "@ably/chat";
 import { ChatRoomProvider } from "@ably/chat/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client"
-
+import { authClient } from "@/lib/auth-client";
 
 function GlobalChat() {
   const { data: session } = authClient.useSession();
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
 
   const { sendMessage } = useMessages({
@@ -20,14 +19,15 @@ function GlobalChat() {
       if (event.type === ChatMessageEventType.Created) {
         setMessages((prev) => [...prev, event.message]);
       }
-    }
+    },
   });
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
     sendMessage({ text: inputValue.trim() }).catch((err) =>
-      console.error('Error sending message', err));
-    setInputValue('');
+      console.error("Error sending message", err),
+    );
+    setInputValue("");
   };
 
   const isMine = (msg: Message) => msg.clientId === session?.user.id;
@@ -39,12 +39,17 @@ function GlobalChat() {
       </div>
       <div className="flex-1 p-4 overflow-y-auto space-y-2">
         {messages.map((msg) => (
-          <div key={msg.serial} className={`flex ${isMine(msg) ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[70%] rounded-lg px-3 py-2 ${
-              isMine(msg) 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-100 text-gray-900'
-            }`}>
+          <div
+            key={msg.serial}
+            className={`flex ${isMine(msg) ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-[70%] rounded-lg px-3 py-2 ${
+                isMine(msg)
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-900"
+              }`}
+            >
               <p className="text-sm">{msg.text}</p>
             </div>
           </div>
@@ -62,10 +67,13 @@ function GlobalChat() {
             placeholder="Type a message..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
             className="flex-1"
           />
-          <Button onClick={handleSend} className="bg-blue-500 hover:bg-blue-600">
+          <Button
+            onClick={handleSend}
+            className="bg-blue-500 hover:bg-blue-600"
+          >
             Send
           </Button>
         </div>
