@@ -26,10 +26,10 @@ export const rooms = pgTable(
     // Canonical sorted pair "userIdSmaller:userIdLarger" — NULL for groups.
     // Used only for enforcing one DM per user pair at the DB level.
     dmKey: text("dm_key"),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    createdAt: timestamp("created_at")
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
+    updatedAt: timestamp("updated_at")
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
@@ -62,10 +62,10 @@ export const groupInfo = pgTable(
     createdBy: text("created_by")
       .notNull()
       .references(() => user.id),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    createdAt: timestamp("created_at")
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
+    updatedAt: timestamp("updated_at")
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
@@ -83,7 +83,7 @@ export const roomMembers = pgTable(
       .notNull()
       .references(() => user.id),
     role: roomRoleEnum("role").notNull().default("member"),
-    joinedAt: timestamp("joined_at", { withTimezone: true })
+    joinedAt: timestamp("joined_at")
       .notNull()
       .defaultNow(),
   },

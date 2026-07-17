@@ -16,7 +16,7 @@ export const messages = pgTable(
       .notNull()
       .references(() => user.id),
     content: text("content").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    createdAt: timestamp("created_at")
       .notNull()
       .defaultNow(),
   },

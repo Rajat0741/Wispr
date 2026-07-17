@@ -15,7 +15,7 @@ export async function POST() {
     const tokenRequest = await rest.auth.createTokenRequest({
       clientId: session.user.id,
       capability: {
-        "global-chat": ["publish", "subscribe", "presence", "history"],
+        "*": ["publish", "subscribe", "presence", "history"],
       },
     });
     return NextResponse.json(tokenRequest);
