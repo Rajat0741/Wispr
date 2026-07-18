@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, exists } from "drizzle-orm";
 import type z from "zod";
 import { db } from "../index";
 import {
@@ -53,10 +53,23 @@ export const deleteRoom = async (roomId: string) => {
   await db.delete(rooms).where(eq(rooms.id, roomId));
 };
 
-// Todo: Modify this to return group members data and settings only
-export const getRoomWithMembers = async (roomId: string) => {
+// exists check for room membership of user
+export const getRoomWithMembers = async (roomId: string, userId: string) => {
   const room = await db.query.rooms.findFirst({
-    where: eq(rooms.id, roomId),
+    where: and(
+      eq(rooms.id, roomId),
+      exists(
+        db
+          .select({ roomId: roomMembers.roomId })
+          .from(roomMembers)
+          .where(
+            and(
+              eq(roomMembers.roomId, rooms.id),
+              eq(roomMembers.userId, userId),
+            ),
+          ),
+      ),
+    ),
     with: {
       members: {
         with: {
@@ -71,4 +84,27 @@ export const getRoomWithMembers = async (roomId: string) => {
   return {
     room,
   };
+};
+
+export const getRoomsForUser = async (userId: string) => {
+  return db.query.roomMembers.findMany({
+    where: eq(roomMembers.userId, userId),
+    with: {
+      room: {
+        with: {
+          dm: {
+            with: {
+              user1: true,
+              user2: true,
+            },
+          },
+          group: true,
+          messages: {
+            orderBy: (messages, { desc }) => [desc(messages.createdAt)],
+            limit: 1,
+          },
+        },
+      },
+    },
+  });
 };

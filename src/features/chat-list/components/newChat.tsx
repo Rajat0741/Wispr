@@ -1,7 +1,7 @@
 "use client";
 
 import { betterFetch } from "@better-fetch/fetch";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
@@ -48,6 +48,7 @@ async function searchUsers(username: string): Promise<SearchUser[]> {
 
 export function NewChat() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
@@ -71,6 +72,7 @@ export function NewChat() {
   const { execute, isExecuting, result } = useAction(createDm, {
     onSuccess: async ({ data }) => {
       if (!data?.roomId) return;
+      await queryClient.invalidateQueries({ queryKey: ["chat-rooms"] });
       setOpen(false);
       setInput("");
       router.push(`/chat/${data.roomId}`);
