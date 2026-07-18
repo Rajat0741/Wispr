@@ -2,8 +2,7 @@ import { relations } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { user } from "./index";
-import { rooms } from "./rooms";
+import { rooms, user } from "./index";
 
 export const messages = pgTable(
   "messages",
@@ -16,13 +15,10 @@ export const messages = pgTable(
       .notNull()
       .references(() => user.id),
     content: text("content").notNull(),
-    createdAt: timestamp("created_at")
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
-    index("idx_messages_room").on(table.roomId, table.createdAt),
-    index("idx_messages_sender").on(table.senderId),
+    index("messages_room_created_idx").on(table.roomId, table.createdAt),
   ],
 );
 
