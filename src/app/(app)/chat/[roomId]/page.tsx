@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { RoomChat } from "@/features/chat/components/room-chat";
-import { getRoomWithMembers } from "@/lib/db/queries/room";
+import { getRoomMessages, getRoomWithMembers } from "@/lib/db/queries/room";
 import { getUserSession } from "@/lib/getUser";
 
 export default async function RoomPage({
@@ -16,15 +16,14 @@ export default async function RoomPage({
   const roomData = await getRoomWithMembers(roomId, session.user.id);
   if (!roomData) notFound();
 
+  const dbMessages = await getRoomMessages(roomId, 50);
+
   return (
     <RoomChat
-      members={roomData.room.members.map(({ user }) => ({
-        id: user.id,
-        name: user.name,
-        username: user.username,
-        image: user.image,
-      }))}
+      members={roomData.room.members.map(({ user }) => user)}
       roomType={roomData.room.roomType}
+      group={roomData.room.group}
+      initialMessages={dbMessages}
     />
   );
 }

@@ -6,6 +6,7 @@ import {
   insertDmSchema,
   insertRoomMemberSchema,
   insertRoomSchema,
+  messages,
   roomMembers,
   rooms,
 } from "../schema";
@@ -76,6 +77,7 @@ export const getRoomWithMembers = async (roomId: string, userId: string) => {
           user: true,
         },
       },
+      group: true,
     },
   });
 
@@ -108,3 +110,15 @@ export const getRoomsForUser = async (userId: string) => {
     },
   });
 };
+
+export const getRoomMessages = async (roomId: string, limit = 50) => {
+  return db.query.messages.findMany({
+    where: eq(messages.roomId, roomId),
+    orderBy: (messages, { desc }) => [desc(messages.createdAt)],
+    limit,
+    with: {
+      sender: true,
+    },
+  });
+};
+
