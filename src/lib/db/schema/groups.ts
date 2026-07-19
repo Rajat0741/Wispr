@@ -31,5 +31,5 @@ export const groupsRelations = relations(groups, ({ one }) => ({
 export const insertGroupSchema = createInsertSchema(groups);
 export const selectGroupSchema = createSelectSchema(groups);
 
-export type Group = z.infer<typeof selectGroupSchema>;
+export type GroupType = z.infer<typeof selectGroupSchema>;
 export type NewGroup = z.infer<typeof insertGroupSchema>;

@@ -1,14 +1,14 @@
 "use server";
 
 import { z } from "zod";
-import { getUserById } from "@/lib/db/queries/auth";
 import {
   createDmRecord,
   createRoom,
   createRoomMembers,
   deleteRoom,
   getDmByKey,
-} from "@/lib/db/queries/room";
+  getUserById
+} from "@/lib/db/queries";
 import { authActionClient } from "@/lib/safe-action";
 import { AppError } from "@/utils/app-error";
 import { getDmKey } from "@/utils/get-dm-key ";

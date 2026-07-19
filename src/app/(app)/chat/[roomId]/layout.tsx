@@ -1,4 +1,4 @@
-import { RoomProvider } from "../../../../lib/providers/room-provider";
+import { RoomProvider } from "@/lib/providers/room-provider";
 
 export default async function Page({
   children,

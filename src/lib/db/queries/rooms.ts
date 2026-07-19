@@ -122,3 +122,13 @@ export const getRoomMessages = async (roomId: string, limit = 50) => {
   });
 };
 
+export const checkUserMembershipInRoom = async (roomId: string, userId: string) => {
+  const membership = await db.query.roomMembers.findFirst({
+    where: and(
+      eq(roomMembers.roomId, roomId),
+      eq(roomMembers.userId, userId),
+    ),
+  });
+  
+  return membership !== null;
+}

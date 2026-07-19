@@ -1,8 +1,26 @@
 import { relations } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  type AnyPgColumn,
+  index,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { rooms, user } from "./index";
+
+export const messageTypeEnum = pgEnum("message_type", [
+  "text",
+  "image",
+  "video",
+  "audio",
+  "file",
+  "ai",
+]);
+export const messageTypeSchema = z.enum(messageTypeEnum.enumValues);
 
 export const messages = pgTable(
   "messages",
@@ -14,7 +32,11 @@ export const messages = pgTable(
     senderId: text("sender_id")
       .notNull()
       .references(() => user.id),
+    type: messageTypeEnum("type").notNull(),
     content: text("content").notNull(),
+    replyTo: uuid("reply_to").references((): AnyPgColumn => messages.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
@@ -24,9 +46,18 @@ export const messages = pgTable(
 
 // ---- relations ----
 
-export const messagesRelations = relations(messages, ({ one }) => ({
+export const messagesRelations = relations(messages, ({ one, many }) => ({
   room: one(rooms, { fields: [messages.roomId], references: [rooms.id] }),
   sender: one(user, { fields: [messages.senderId], references: [user.id] }),
+  replyTo: one(messages, {
+    fields: [messages.replyTo],
+    references: [messages.id],
+    relationName: "messageReply",
+  }),
+
+  replies: many(messages, {
+    relationName: "messageReply",
+  }),
 }));
 
 // ---- zod schemas ----
@@ -38,5 +69,5 @@ export const selectMessageSchema = createSelectSchema(messages);
 
 // ---- convenience types ----
 
-export type Message = z.infer<typeof selectMessageSchema>;
+export type MessageType = z.infer<typeof selectMessageSchema>;
 export type NewMessage = z.infer<typeof insertMessageSchema>;

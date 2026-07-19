@@ -2,73 +2,76 @@
 
 import { ChatMessageEventType } from "@ably/chat";
 import { useMessages } from "@ably/chat/react";
+import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
+import z from "zod";
+import { sendMessage } from "@/features/chat/actions/sendMessage";
 import { authClient } from "@/lib/auth-client";
-import type { Group } from "@/lib/db/schema";
+import type { GroupType, MessageType } from "@/lib/db/schema";
+import { selectMessageSchema } from "@/lib/db/schema";
 import type { User } from "@/types/user";
 import { ChatHeader } from "./chat-header";
 import { ChatInput } from "./chat-input";
 import { ChatMessages } from "./chat-messages";
 
-export interface ChatMessage {
-  serial: string;
-  text: string;
-  timestamp: Date;
-  clientId: string;
+const realtimeMessageSchema = selectMessageSchema.extend({
+  createdAt: z.coerce.date(),
+});
+
+function parseRealtimeMessage(text: string) {
+  try {
+
+    const parsed = realtimeMessageSchema.safeParse(JSON.parse(text));
+
+    if (!parsed.success) {
+      console.error("Received invalid chat message payload", parsed.error);
+      return null;
+    }
+
+    return parsed.data;
+  } catch (error) {
+    console.error("Received malformed chat message payload", error);
+    return null;
+  }
 }
 
 export function RoomChat({
+  roomId,
   members,
   roomType,
   group,
   initialMessages,
 }: {
+  roomId: string;
   members: User[];
   roomType: "dm" | "group";
-  group?: Group | null;
-  initialMessages: {
-    id: string;
-    roomId: string;
-    senderId: string;
-    content: string;
-    createdAt: Date | string;
-  }[];
+  group?: GroupType | null;
+  initialMessages: MessageType[];
 }) {
   const { data: session } = authClient.useSession();
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    const mapped = (initialMessages ?? []).map((msg) => ({
-      serial: msg.id,
-      text: msg.content,
-      timestamp: new Date(msg.createdAt),
-      clientId: msg.senderId,
-    }));
-    return [...mapped].reverse();
+  const [messages, setMessages] = useState<MessageType[]>(() => {
+    return [...(initialMessages ?? [])].reverse();
   });
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
-  const { sendMessage } = useMessages({
+  const { execute } = useAction(sendMessage);
+
+  useMessages({
     listener: (event) => {
       if (event.type === ChatMessageEventType.Created) {
+        const parsed = parseRealtimeMessage(event.message.text);
+        if (!parsed) return;
+
         setMessages((current) =>
-          current.some((message) => message.serial === event.message.serial)
+          current.some((message) => message.id === parsed.id)
             ? current
-            : [
-                ...current,
-                {
-                  serial: event.message.serial,
-                  text: event.message.text,
-                  timestamp: event.message.timestamp,
-                  clientId: event.message.clientId,
-                },
-              ],
+            : [...current, parsed],
         );
       }
     },
   });
 
-
   const handleSend = async (text: string) => {
-    await sendMessage({ text });
+    execute({ roomId, message: text, type: "text" });
   };
 
   const otherMember = members.find((member) => member.id !== session?.user.id);
@@ -94,7 +97,6 @@ export function RoomChat({
 
       <ChatMessages
         messages={messages}
-        isLoadingHistory={isLoadingHistory}
         members={members}
         roomType={roomType}
         currentUserId={session?.user.id}
@@ -104,4 +106,3 @@ export function RoomChat({
     </div>
   );
 }
-

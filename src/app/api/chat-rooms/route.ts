@@ -1,4 +1,4 @@
-import { getRoomsForUser } from "@/lib/db/queries/room";
+import { getRoomsForUser } from "@/lib/db/queries";
 import { getUserSession } from "@/lib/getUser";
 import { AppError } from "@/utils/app-error";
 

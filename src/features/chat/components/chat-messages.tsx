@@ -23,16 +23,16 @@ import {
   MessageScrollerViewport,
 } from "@/components/ui/message-scroller";
 import type { User } from "@/types/user";
-import type { ChatMessage } from "./room-chat";
+import type { MessageType } from "@/lib/db/schema";
 
 // Groups consecutive messages from the same sender so avatar/name only
 // render once per run, matching MessageGroup's intended usage.
-function groupMessages(messages: ChatMessage[]) {
-  const groups: ChatMessage[][] = [];
+function groupMessages(messages: MessageType[]) {
+  const groups: MessageType[][] = [];
   for (const message of messages) {
     const lastGroup = groups[groups.length - 1];
     const lastMessage = lastGroup?.[lastGroup.length - 1];
-    if (lastMessage && lastMessage.clientId === message.clientId) {
+    if (lastMessage && lastMessage.senderId === message.senderId) {
       lastGroup.push(message);
     } else {
       groups.push([message]);
@@ -43,13 +43,11 @@ function groupMessages(messages: ChatMessage[]) {
 
 export function ChatMessages({
   messages,
-  isLoadingHistory,
   members,
   roomType,
   currentUserId,
 }: {
-  messages: ChatMessage[];
-  isLoadingHistory: boolean;
+  messages: MessageType[];
   members: User[];
   roomType: "dm" | "group";
   currentUserId: string | undefined;
@@ -66,11 +64,7 @@ export function ChatMessages({
       <MessageScroller className="flex-1">
         <MessageScrollerViewport>
           <MessageScrollerContent className="gap-4 px-4 py-5">
-            {isLoadingHistory ? (
-              <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-                Loading messages...
-              </div>
-            ) : groupedMessages.length === 0 ? (
+            {groupedMessages.length === 0 ? (
               <Empty>
                 <EmptyHeader>
                   <EmptyTitle>No messages yet</EmptyTitle>
@@ -81,21 +75,21 @@ export function ChatMessages({
               </Empty>
             ) : (
               groupedMessages.map((group) => {
-                const sender = memberById.get(group[0].clientId);
-                const isMine = group[0].clientId === currentUserId;
+                const sender = memberById.get(group[0].senderId);
+                const isMine = group[0].senderId === currentUserId;
                 const lastInGroup = group.length - 1;
 
                 return (
-                  <MessageGroup key={group[0].serial}>
+                  <MessageGroup key={group[0].id}>
                     {group.map((message, i) => (
                       <MessageScrollerItem
-                        key={message.serial}
-                        messageId={message.serial}
+                        key={message.id}
+                        messageId={message.id}
                         scrollAnchor={isMine && i === lastInGroup}
                         className="w-full"
                       >
                         <Message align={isMine ? "end" : "start"} className="">
-                          {i === lastInGroup && roomType==="group" && (
+                          {i === lastInGroup && roomType === "group" && (
                             <MessageAvatar>
                               <Avatar className="size-7">
                                 <AvatarImage
@@ -120,12 +114,12 @@ export function ChatMessages({
                               }
                             >
                               <p className="whitespace-pre-wrap wrap-break-word">
-                                {message.text}
+                                {message.content}
                               </p>
                             </div>
                             {i === lastInGroup && (
                               <MessageFooter>
-                                {new Date(message.timestamp).toLocaleTimeString(
+                                {new Date(message.createdAt).toLocaleTimeString(
                                   [],
                                   {
                                     hour: "2-digit",

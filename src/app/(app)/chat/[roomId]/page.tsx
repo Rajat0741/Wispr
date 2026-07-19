@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { RoomChat } from "@/features/chat/components/room-chat";
-import { getRoomMessages, getRoomWithMembers } from "@/lib/db/queries/room";
+import { getRoomMessages, getRoomWithMembers } from "@/lib/db/queries";
 import { getUserSession } from "@/lib/getUser";
 
 export default async function RoomPage({
@@ -20,6 +20,7 @@ export default async function RoomPage({
 
   return (
     <RoomChat
+      roomId={roomId}
       members={roomData.room.members.map(({ user }) => user)}
       roomType={roomData.room.roomType}
       group={roomData.room.group}
