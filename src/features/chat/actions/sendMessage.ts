@@ -1,7 +1,6 @@
 "use server";
 
 import z from "zod";
-import { chatServer } from "@/lib/chat-server";
 import { checkUserMembershipInRoom, createMessage } from "@/lib/db/queries";
 import { messageTypeSchema } from "@/lib/db/schema";
 import { authActionClient } from "@/lib/safe-action";
@@ -33,15 +32,5 @@ export const sendMessage = authActionClient
       throw new AppError("The message could not be created", 500);
     }
 
-    // Room name must match the ChatRoomProvider name used on the client.
-    // attach() is required before send() — ChatRoomProvider handles this
-    // automatically on the client, but must be called explicitly on the server.
-    const room = await chatServer.rooms.get(roomId);
-    await room.attach();
-
-    await room.messages.send({
-      text: JSON.stringify(newMessage),
-    });
-    
     return newMessage;
   });

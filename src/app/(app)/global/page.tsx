@@ -1,36 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { useMessages } from "@ably/chat/react";
-import type { Message, ChatMessageEvent } from "@ably/chat";
-import { ChatMessageEventType } from "@ably/chat";
-import { ChatRoomProvider } from "@ably/chat/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
+interface SimpleMessage {
+  id: string;
+  text: string;
+  senderId: string;
+}
+
 function GlobalChat() {
   const { data: session } = authClient.useSession();
   const [inputValue, setInputValue] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  const { sendMessage } = useMessages({
-    listener: (event: ChatMessageEvent) => {
-      if (event.type === ChatMessageEventType.Created) {
-        setMessages((prev) => [...prev, event.message]);
-      }
-    },
-  });
+  const [messages, setMessages] = useState<SimpleMessage[]>([]);
 
   const handleSend = () => {
-    if (!inputValue.trim()) return;
-    sendMessage({ text: inputValue.trim() }).catch((err) =>
-      console.error("Error sending message", err),
-    );
+    if (!inputValue.trim() || !session?.user) return;
+    const newMsg: SimpleMessage = {
+      id: crypto.randomUUID(),
+      text: inputValue.trim(),
+      senderId: session.user.id,
+    };
+    setMessages((prev) => [...prev, newMsg]);
     setInputValue("");
   };
 
-  const isMine = (msg: Message) => msg.clientId === session?.user.id;
+  const isMine = (msg: SimpleMessage) => msg.senderId === session?.user.id;
 
   return (
     <div className="flex flex-col w-full max-w-3xl h-[calc(100vh-2rem)] m-4 bg-white border border-gray-200 rounded-lg overflow-hidden mx-auto">
@@ -40,7 +37,7 @@ function GlobalChat() {
       <div className="flex-1 p-4 overflow-y-auto space-y-2">
         {messages.map((msg) => (
           <div
-            key={msg.serial}
+            key={msg.id}
             className={`flex ${isMine(msg) ? "justify-end" : "justify-start"}`}
           >
             <div
@@ -83,9 +80,5 @@ function GlobalChat() {
 }
 
 export default function GlobalPage() {
-  return (
-    <ChatRoomProvider name="global-chat">
-      <GlobalChat />
-    </ChatRoomProvider>
-  );
+  return <GlobalChat />;
 }
