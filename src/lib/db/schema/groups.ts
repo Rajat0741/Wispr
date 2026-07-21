@@ -2,7 +2,8 @@ import { relations } from "drizzle-orm";
 import { pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import type { z } from "zod";
-import { rooms, user } from "./index";
+import { user } from "./auth-schema";
+import { rooms } from "./rooms";
 
 export const groups = pgTable("groups", {
   roomId: uuid("room_id")

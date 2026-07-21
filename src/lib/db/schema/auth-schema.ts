@@ -1,6 +1,9 @@
 import { relations } from "drizzle-orm";
 import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { dms, groups, messages, roomMembers } from "./index";
+import { dms } from "./dms";
+import { groups } from "./groups";
+import { messages } from "./messages";
+import { roomMembers } from "./rooms";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),

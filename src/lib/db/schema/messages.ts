@@ -10,7 +10,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { rooms, user } from "./index";
+import { user } from "./auth-schema";
+import { rooms } from "./rooms";
 
 export const messageTypeEnum = pgEnum("message_type", [
   "text",
