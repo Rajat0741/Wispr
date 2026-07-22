@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { supabase } from "@/lib/supabase/client";
 
 interface SimpleMessage {
   id: string;
@@ -16,6 +17,30 @@ function GlobalChat() {
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<SimpleMessage[]>([]);
 
+  useEffect(() => {
+    const channel = supabase.channel("room:global");
+
+    channel
+      .on(
+        "broadcast",
+        { event: "new-message" },
+        ({ payload }: { payload: SimpleMessage }) => {
+          if (payload && payload.id) {
+            setMessages((prev) =>
+              prev.some((m) => m.id === payload.id)
+                ? prev
+                : [...prev, payload],
+            );
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const handleSend = () => {
     if (!inputValue.trim() || !session?.user) return;
     const newMsg: SimpleMessage = {
@@ -24,6 +49,13 @@ function GlobalChat() {
       senderId: session.user.id,
     };
     setMessages((prev) => [...prev, newMsg]);
+
+    supabase.channel("room:global").send({
+      type: "broadcast",
+      event: "new-message",
+      payload: newMsg,
+    });
+
     setInputValue("");
   };
 

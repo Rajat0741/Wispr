@@ -1,6 +1,6 @@
 # Convo
 
-Convo is a real-time chat application built with Next.js. Authentication is handled by Better Auth, with Drizzle ORM and Neon providing the data layer.
+Convo is a real-time chat application built with Next.js. Authentication is handled by Better Auth, with Drizzle ORM and Supabase Postgres providing the data layer, and Supabase Realtime supplying instant broadcast messaging.
 
 ## Development
 
@@ -8,7 +8,7 @@ Convo is a real-time chat application built with Next.js. Authentication is hand
 
 - Node.js 24 or newer
 - pnpm 9 or newer
-- A Neon PostgreSQL database
+- A Supabase PostgreSQL database
 - Google OAuth credentials
 
 ### Setup
@@ -17,12 +17,23 @@ Convo is a real-time chat application built with Next.js. Authentication is hand
 pnpm install
 ```
 
-Create `.env` with the database, authentication, and Google OAuth values used by the app:
+Create `.env` based on `.env.example`:
 
 ```env
+# Database Connections (Supabase Postgres via Drizzle)
 DATABASE_URL=
+DIRECT_DB_URL=
+
+# Supabase Realtime & API Keys
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
+
+# Better Auth Configuration
 BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=http://localhost:3000
+
+# OAuth Providers
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 ```

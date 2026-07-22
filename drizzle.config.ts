@@ -3,9 +3,9 @@ import { defineConfig } from "drizzle-kit";
 
 config({ path: ".env" });
 
-if (!process.env.DATABASE_URL) {
-  console.error("DATABASE_URL is not defined in .env file");
-  throw new Error("DATABASE_URL is not defined");
+if (!process.env.DIRECT_DB_URL) {
+  console.error("DIRECT_DB_URL is not defined in .env file");
+  throw new Error("DIRECT_DB_URL is not defined");
 }
 
 export default defineConfig({
@@ -13,6 +13,6 @@ export default defineConfig({
   out: "./src/lib/db/migrations",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL,
+    url: process.env.DIRECT_DB_URL,
   },
 });

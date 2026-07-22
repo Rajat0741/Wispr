@@ -120,10 +120,11 @@ export function ChatMessages({
                             {i === lastInGroup && (
                               <MessageFooter>
                                 {new Date(message.createdAt).toLocaleTimeString(
-                                  [],
+                                  "en-US",
                                   {
-                                    hour: "2-digit",
+                                    hour: "numeric",
                                     minute: "2-digit",
+                                    hour12: true,
                                   },
                                 )}
                               </MessageFooter>

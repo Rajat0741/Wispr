@@ -21,6 +21,7 @@ export default async function RoomPage({
   return (
     <RoomChat
       roomId={roomId}
+      currentUserId={session.user.id}
       members={roomData.room.members.map(({ user }) => user)}
       roomType={roomData.room.roomType}
       group={roomData.room.group}

@@ -4,11 +4,12 @@ import z from "zod";
 import { checkUserMembershipInRoom, createMessage } from "@/lib/db/queries";
 import { messageTypeSchema } from "@/lib/db/schema";
 import { authActionClient } from "@/lib/safe-action";
+import { broadcastToRoom } from "@/lib/supabase/server";
 import { AppError } from "@/utils/app-error";
 
 const sendMessageSchema = z.object({
   message: z.string().trim().min(1, "Message cannot be empty"),
-  roomId: z.uuid("Invalid room ID"),
+  roomId: z.string().uuid("Invalid room ID"),
   type: messageTypeSchema,
 });
 
@@ -31,6 +32,8 @@ export const sendMessage = authActionClient
     if (!newMessage) {
       throw new AppError("The message could not be created", 500);
     }
+
+    await broadcastToRoom(roomId, "new-message", newMessage);
 
     return newMessage;
   });
