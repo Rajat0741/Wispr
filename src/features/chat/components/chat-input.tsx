@@ -28,22 +28,23 @@ export function ChatInput({
   };
 
   return (
-    <form className="flex gap-2 border-t p-3" onSubmit={handleSubmit}>
+    <form className="flex items-center gap-2 p-4" onSubmit={handleSubmit}>
       <Input
         type="text"
         placeholder="Type a message..."
         value={inputValue}
         onChange={(event) => setInputValue(event.target.value)}
         disabled={isSending}
-        className="flex-1"
+        className="h-12 flex-1 px-4 py-2.5 rounded-full bg-accent focus-visible:ring-0 focus-visible:border-border"
       />
       <Button
         type="submit"
         size="icon"
         disabled={!inputValue.trim() || isSending}
         aria-label="Send message"
+        className="size-11 shrink-0 rounded-full"
       >
-        <SendIcon className="size-4" />
+        <SendIcon className="size-5" />
       </Button>
     </form>
   );

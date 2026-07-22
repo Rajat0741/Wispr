@@ -9,9 +9,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <SidebarProvider open={false}>
       <AppSidebar />
       <SidebarInset>
-        <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+        {children}
       </SidebarInset>
     </SidebarProvider>
   );
 }
-

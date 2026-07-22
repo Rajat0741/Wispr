@@ -1,15 +1,17 @@
 "use client";
 
-import { MessageCircleIcon, RadioIcon, UserCircleIcon } from "lucide-react";
+import {
+  MessageCircleIcon,
+  RadioIcon,
+  UserCircleIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type * as React from "react";
-
-import { NavUser } from "@/components/nav-user";
+import { MdMessage } from "react-icons/md";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -18,14 +20,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-const user = {
-  name: "shadcn",
-  email: "m@example.com",
-  avatar: "/avatars/shadcn.jpg",
-};
-
 const navigation = [
-  { title: "Chat", href: "/chat", icon: MessageCircleIcon },
+  { title: "Chat", href: "/chat", icon: MdMessage },
   { title: "Global Chat", href: "/global", icon: RadioIcon },
   { title: "Profile", href: "/profile", icon: UserCircleIcon },
 ];
@@ -40,13 +36,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
-              className="md:h-8 md:p-0"
+              className="md:h-9 md:p-0"
               tooltip={{ children: "Chats", hidden: false }}
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <MessageCircleIcon className="size-4" />
+              <div className="flex aspect-square size-9 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
+                <MessageCircleIcon className="size-5" />
               </div>
-              <span className="truncate font-medium">Chats</span>
+              <span className="truncate text-sm font-semibold">Chats</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -59,15 +55,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 const Icon = item.icon;
 
                 return (
-                  <SidebarMenuItem key={item.href}>
+                  <SidebarMenuItem
+                    key={item.href}
+                    className="flex justify-center"
+                  >
                     <SidebarMenuButton
                       render={<Link href={item.href} />}
                       tooltip={{ children: item.title, hidden: false }}
                       isActive={pathname.startsWith(item.href)}
-                      className="px-2.5 md:px-2"
+                      className="flex justify-center"
                     >
-                      <Icon />
-                      <span>{item.title}</span>
+                      <Icon className="size-5" />
+                      <span className="text-sm font-medium hidden">
+                        {item.title}
+                      </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -76,9 +77,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={user} />
-      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -25,6 +25,7 @@ import {
 import type { MessageType } from "@/lib/db/schema";
 import type { User } from "@/types/user";
 import { format } from "date-fns";
+import { ArrowDownIcon } from "lucide-react";
 
 // Groups consecutive messages from the same sender so avatar/name only
 // render once per run, matching MessageGroup's intended usage.
@@ -135,12 +136,18 @@ function ChatMessageListContainer({ children }: { children: React.ReactNode }) {
   return (
     <MessageScrollerProvider autoScroll defaultScrollPosition="end">
       <MessageScroller className="flex-1">
-        <MessageScrollerViewport>
+        <MessageScrollerViewport className="mask-none [webkit-mask-image:none]">
           <MessageScrollerContent className="gap-4 px-4 py-5">
             {children}
           </MessageScrollerContent>
         </MessageScrollerViewport>
-        <MessageScrollerButton />
+        <MessageScrollerButton
+          size="icon"
+          className="left-auto right-8 size-10 rounded-full shadow-md border border-border bg-background text-foreground hover:bg-muted z-20"
+        >
+          <ArrowDownIcon className="size-5" />
+          <span className="sr-only">Scroll to bottom</span>
+        </MessageScrollerButton>
       </MessageScroller>
     </MessageScrollerProvider>
   );

@@ -6,6 +6,7 @@ import { LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
+import { RiChatNewLine } from "react-icons/ri";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -88,10 +89,12 @@ export function NewChat() {
     <>
       <Button
         type="button"
-        className="absolute right-6 bottom-6 z-40 rounded-full shadow-lg"
+        className="size-8 bg-transparent hover:bg-accent p-4"
         onClick={() => setOpen(true)}
+        title="New chat"
       >
-        New chat
+        <RiChatNewLine className="size-5 ml-0.5" />
+        <span className="sr-only">New chat</span>
       </Button>
       <CommandDialog
         open={open}
