@@ -1,5 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommandItem } from "@/components/ui/command";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@/components/ui/item";
 
 export type SearchUser = {
   id: string;
@@ -24,21 +31,28 @@ export function UserItem({
       value={`${user.name} ${user.username ?? ""}`}
       disabled={disabled}
       onSelect={onSelect}
-      className="gap-3 py-2"
+      className="p-0 border-none outline-none cursor-pointer data-selected:bg-muted [&>svg:last-child]:hidden"
     >
-      <Avatar size="sm">
-        <AvatarImage
-          src={user.image ?? undefined}
-          alt={`${user.name}'s avatar`}
-        />
-        <AvatarFallback>{fallback}</AvatarFallback>
-      </Avatar>
-      <span className="flex min-w-0 flex-col">
-        <span className="truncate font-medium">{user.name}</span>
-        <span className="truncate text-xs text-muted-foreground">
-          @{user.username ?? "username unavailable"}
-        </span>
-      </span>
+      <Item
+        size="xs"
+        className="w-full"
+      >
+        <ItemMedia className="h-full flex items-center">
+          <Avatar className="size-9">
+            <AvatarImage
+              src={user.image ?? undefined}
+              alt={`${user.name}'s avatar`}
+            />
+            <AvatarFallback>{fallback}</AvatarFallback>
+          </Avatar>
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>{user.name}</ItemTitle>
+          <ItemDescription className="line-clamp-1">
+            @{user.username ?? "username unavailable"}
+          </ItemDescription>
+        </ItemContent>
+      </Item>
     </CommandItem>
   );
 }

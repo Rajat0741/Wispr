@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   try {
     const session = await getUserSession(request.headers);
     const rooms = await getRoomsForUser(session.user.id);
+    
     const sortedRooms = [...rooms].sort((a, b) => {
       const aTimestamp = a.room.messages[0]?.createdAt ?? a.room.createdAt;
       const bTimestamp = b.room.messages[0]?.createdAt ?? b.room.createdAt;
@@ -13,16 +14,27 @@ export async function GET(request: Request) {
       return bTimestamp.getTime() - aTimestamp.getTime();
     });
 
-    // Filter out other users from DM rooms
+    // Extract room display metadata strictly based on room type
     const chatRooms = sortedRooms.map(({ room }) => {
-      const otherDmUser =
-        room.dm?.user1Id === session.user.id ? room.dm.user2 : room.dm?.user1;
       const latestMessage = room.messages[0];
+      const isDm = room.roomType === "dm";
+
+      let name = "Conversation";
+      let image: string | null = null;
+
+      if (isDm && room.dm) {
+        const partner = room.dm.user1Id === session.user.id ? room.dm.user2 : room.dm.user1;
+        name = partner?.name ?? "Direct Message";
+        image = partner?.image ?? null;
+      } else if (room.group) {
+        name = room.group.name;
+        image = room.group.groupImage ?? null;
+      }
 
       return {
         roomId: room.id,
-        name: room.group?.name ?? otherDmUser?.name ?? "Conversation",
-        image: room.group?.groupImage ?? otherDmUser?.image ?? null,
+        name,
+        image,
         lastMessage: latestMessage?.content ?? null,
         lastMessageCreatedAt: latestMessage?.createdAt ?? null,
       };

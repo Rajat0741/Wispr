@@ -43,7 +43,7 @@ export function RoomChat({
         "broadcast",
         { event: "new-message" },
         ({ payload }: { payload: MessageType }) => {
-          if (payload && payload.id) {
+          if (payload?.id) {
             setMessages((current) =>
               current.some((m) => m.id === payload.id)
                 ? current
@@ -78,22 +78,24 @@ export function RoomChat({
     execute({ roomId, message: text, type: "text" });
   };
 
-  const otherMember = members.find((member) => member.id !== activeUserId);
+  const getRoomMetadata = () => {
+    if (roomType === "dm") {
+      const partner = members.find((member) => member.id !== activeUserId);
+      return {
+        title: partner?.name ?? "Direct Message",
+        image: partner?.image ?? null,
+        subtitle: null,
+      };
+    }
 
-  const roomTitle =
-    roomType === "dm"
-      ? (otherMember?.name ?? "Conversation")
-      : (group?.name ?? `${members.length} members`);
+    return {
+      title: group?.name ?? `${members.length} members`,
+      image: group?.groupImage ?? null,
+      subtitle: members.map((member) => member.name).join(", "),
+    };
+  };
 
-  const roomImage =
-    roomType === "dm"
-      ? (otherMember?.image ?? null)
-      : (group?.groupImage ?? null);
-
-  const roomSubtitle =
-    roomType === "group"
-      ? members.map((member) => member.name).join(", ")
-      : null;
+  const { title: roomTitle, image: roomImage, subtitle: roomSubtitle } = getRoomMetadata();
 
   return (
     <div className="flex h-screen w-full flex-col bg-background">

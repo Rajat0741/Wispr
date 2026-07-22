@@ -1,5 +1,5 @@
-import { useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import {
   Empty,
   EmptyDescription,
@@ -22,8 +22,9 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from "@/components/ui/message-scroller";
-import type { User } from "@/types/user";
 import type { MessageType } from "@/lib/db/schema";
+import type { User } from "@/types/user";
+import { format } from "date-fns";
 
 // Groups consecutive messages from the same sender so avatar/name only
 // render once per run, matching MessageGroup's intended usage.
@@ -52,91 +53,91 @@ export function ChatMessages({
   roomType: "dm" | "group";
   currentUserId: string | undefined;
 }) {
-  const memberById = useMemo(
-    () => new Map(members.map((member) => [member.id, member])),
-    [members],
+  const memberById = new Map(members.map((member) => [member.id, member]));
+  const groupedMessages = groupMessages(messages);
+
+  if (!groupedMessages || groupedMessages.length === 0) {
+    return (
+      <ChatMessageListContainer>
+        <ChatEmptyState />
+      </ChatMessageListContainer>
+    );
+  }
+
+  return (
+    <ChatMessageListContainer>
+      {groupedMessages.map((group) => {
+        const sender = memberById.get(group[0].senderId);
+        const isMine = group[0].senderId === currentUserId;
+        const lastInGroup = group.length - 1;
+
+        return (
+          <MessageGroup key={group[0].id}>
+            {group.map((message, i) => (
+              <MessageScrollerItem
+                key={message.id}
+                messageId={message.id}
+                scrollAnchor={isMine && i === lastInGroup}
+              >
+                <Message align={isMine ? "end" : "start"}>
+                  {i === lastInGroup && roomType === "group" && (
+                    <MessageAvatar>
+                      <Avatar className="size-7">
+                        <AvatarImage
+                          src={sender?.image ?? undefined}
+                          alt={sender?.name}
+                        />
+                        <AvatarFallback>
+                          {sender?.name?.charAt(0).toUpperCase() ?? "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </MessageAvatar>
+                  )}
+                  <MessageContent>
+                    {roomType === "group" && !isMine && i === 0 && (
+                      <MessageHeader>{sender?.name}</MessageHeader>
+                    )}
+                    <Bubble variant={isMine ? "default" : "muted"}>
+                      <BubbleContent className="whitespace-pre-wrap">
+                        {message.content}
+                      </BubbleContent>
+                    </Bubble>
+                    {i === lastInGroup && (
+                      <MessageFooter>
+                        {format(new Date(message.createdAt), "h:mm a")}
+                      </MessageFooter>
+                    )}
+                  </MessageContent>
+                </Message>
+              </MessageScrollerItem>
+            ))}
+          </MessageGroup>
+        );
+      })}
+    </ChatMessageListContainer>
   );
+}
 
-  const groupedMessages = useMemo(() => groupMessages(messages), [messages]);
+function ChatEmptyState() {
+  return (
+    <Empty>
+      <EmptyHeader>
+        <EmptyTitle>No messages yet</EmptyTitle>
+        <EmptyDescription>
+          Start the conversation by typing a message below.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  );
+}
 
+function ChatMessageListContainer({ children }: { children: React.ReactNode }) {
   return (
     <MessageScrollerProvider autoScroll defaultScrollPosition="end">
       <MessageScroller className="flex-1">
         <MessageScrollerViewport>
           <MessageScrollerContent className="gap-4 px-4 py-5">
-            {groupedMessages.length === 0 ? (
-              <Empty>
-                <EmptyHeader>
-                  <EmptyTitle>No messages yet</EmptyTitle>
-                  <EmptyDescription>
-                    Start the conversation by typing a message below.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              groupedMessages.map((group) => {
-                const sender = memberById.get(group[0].senderId);
-                const isMine = group[0].senderId === currentUserId;
-                const lastInGroup = group.length - 1;
-
-                return (
-                  <MessageGroup key={group[0].id}>
-                    {group.map((message, i) => (
-                      <MessageScrollerItem
-                        key={message.id}
-                        messageId={message.id}
-                        scrollAnchor={isMine && i === lastInGroup}
-                        className="w-full"
-                      >
-                        <Message align={isMine ? "end" : "start"} className="">
-                          {i === lastInGroup && roomType === "group" && (
-                            <MessageAvatar>
-                              <Avatar className="size-7">
-                                <AvatarImage
-                                  src={sender?.image ?? undefined}
-                                  alt={sender?.name}
-                                />
-                                <AvatarFallback>
-                                  {sender?.name?.charAt(0).toUpperCase() ?? "?"}
-                                </AvatarFallback>
-                              </Avatar>
-                            </MessageAvatar>
-                          )}
-                          <MessageContent>
-                            {roomType === "group" && !isMine && i === 0 && (
-                              <MessageHeader>{sender?.name}</MessageHeader>
-                            )}
-                            <div
-                              className={
-                                isMine
-                                  ? "rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground w-fit self-end"
-                                  : "rounded-2xl rounded-bl-sm bg-muted px-3 py-2 text-sm text-foreground w-fit"
-                              }
-                            >
-                              <p className="whitespace-pre-wrap wrap-break-word">
-                                {message.content}
-                              </p>
-                            </div>
-                            {i === lastInGroup && (
-                              <MessageFooter>
-                                {new Date(message.createdAt).toLocaleTimeString(
-                                  "en-US",
-                                  {
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  },
-                                )}
-                              </MessageFooter>
-                            )}
-                          </MessageContent>
-                        </Message>
-                      </MessageScrollerItem>
-                    ))}
-                  </MessageGroup>
-                );
-              })
-            )}
+            {children}
           </MessageScrollerContent>
         </MessageScrollerViewport>
         <MessageScrollerButton />

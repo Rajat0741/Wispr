@@ -1,6 +1,8 @@
 "use client";
 
+import { betterFetch } from "@better-fetch/fetch";
 import { useQuery } from "@tanstack/react-query";
+import { formatDistanceToNowStrict } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,7 +14,14 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { betterFetch } from "@better-fetch/fetch";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemHeader,
+  ItemMedia,
+  ItemTitle,
+} from "@/components/ui/item";
 
 type ChatListItem = {
   roomId: string;
@@ -35,10 +44,45 @@ async function getChatRooms(): Promise<ChatListItem[]> {
 function formatLastMessageDate(date: string | null) {
   if (!date) return "";
 
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(date));
+  return formatDistanceToNowStrict(new Date(date), { addSuffix: true });
+}
+
+function ChatItem({
+  room,
+  onSelect,
+}: {
+  room: ChatListItem;
+  onSelect: () => void;
+}) {
+  const { name, lastMessage, lastMessageCreatedAt } = room;
+  return (
+    <CommandItem
+      value={`${name} ${lastMessage ?? ""}`}
+      onSelect={onSelect}
+      className="p-0 border-none outline-none cursor-pointer data-selected:bg-muted [&>svg:last-child]:hidden"
+    >
+      <Item
+        size="sm"
+        className="w-full border-none bg-transparent hover:bg-transparent shadow-none pointer-events-none"
+      >
+        <ItemMedia variant="image">
+          <Avatar className="size-full">
+            <AvatarImage src={room.image ?? undefined} alt={room.name} />
+            <AvatarFallback>{room.name.charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
+        </ItemMedia>
+        <ItemContent>
+          <ItemHeader>
+            <ItemTitle>{room.name}</ItemTitle>
+            <span className="text-muted-foreground text-sm">{formatLastMessageDate(lastMessageCreatedAt)}</span>
+          </ItemHeader>
+          <ItemDescription className="line-clamp-1">
+            {room.lastMessage ?? "No messages yet"}
+          </ItemDescription>
+        </ItemContent>
+      </Item>
+    </CommandItem>
+  );
 }
 
 export function ChatList() {
@@ -77,34 +121,11 @@ export function ChatList() {
         ) : (
           <CommandGroup>
             {filteredRooms.map((room) => (
-              <CommandItem
+              <ChatItem
                 key={room.roomId}
-                value={`${room.name} ${room.lastMessage ?? ""}`}
+                room={room}
                 onSelect={() => router.push(`/chat/${room.roomId}`)}
-                className="flex items-center gap-3 py-2"
-              >
-                <Avatar>
-                  <AvatarImage src={room.image ?? undefined} alt="" />
-                  <AvatarFallback>
-                    {room.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-medium">
-                      {room.name}
-                    </span>
-                    {room.lastMessageCreatedAt && (
-                      <span className="shrink-0 text-[11px] text-muted-foreground">
-                        {formatLastMessageDate(room.lastMessageCreatedAt)}
-                      </span>
-                    )}
-                  </div>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {room.lastMessage ?? "No messages yet"}
-                  </span>
-                </div>
-              </CommandItem>
+              />
             ))}
           </CommandGroup>
         )}
