@@ -1,4 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { format } from "date-fns";
+import { ArrowDownIcon } from "lucide-react";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import {
   Empty,
@@ -22,10 +23,9 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from "@/components/ui/message-scroller";
+import { UserAvatar } from "@/features/common/components/user-avatar";
 import type { MessageType } from "@/lib/db/schema";
 import type { User } from "@/types/user";
-import { format } from "date-fns";
-import { ArrowDownIcon } from "lucide-react";
 
 // Groups consecutive messages from the same sender so avatar/name only
 // render once per run, matching MessageGroup's intended usage.
@@ -83,15 +83,11 @@ export function ChatMessages({
                 <Message align={isMine ? "end" : "start"}>
                   {i === lastInGroup && roomType === "group" && (
                     <MessageAvatar>
-                      <Avatar className="size-7">
-                        <AvatarImage
-                          src={sender?.image ?? undefined}
-                          alt={sender?.name}
-                        />
-                        <AvatarFallback>
-                          {sender?.name?.charAt(0).toUpperCase() ?? "?"}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserAvatar
+                        name={sender?.name}
+                        image={sender?.image}
+                        className="size-7"
+                      />
                     </MessageAvatar>
                   )}
                   <MessageContent>

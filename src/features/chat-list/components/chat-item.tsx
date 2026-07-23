@@ -1,7 +1,6 @@
 "use client";
 
 import { formatDistanceToNowStrict } from "date-fns";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommandItem } from "@/components/ui/command";
 import {
   Item,
@@ -11,6 +10,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
+import { UserAvatar } from "@/features/common/components/user-avatar";
 
 export type ChatListItem = {
   roomId: string;
@@ -42,10 +42,7 @@ export function ChatItem({
     >
       <Item className="w-full pointer-events-none px-3 py-2.5">
         <ItemMedia variant="image" className="size-10">
-          <Avatar className="size-full">
-            <AvatarImage src={room.image ?? undefined} alt={room.name} />
-            <AvatarFallback>{room.name.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
+          <UserAvatar name={room.name} image={room.image} className="size-full" />
         </ItemMedia>
         <ItemContent>
           <ItemHeader>

@@ -3,7 +3,9 @@ import type z from "zod";
 import { db } from "../index";
 import {
   dms,
+  groups,
   insertDmSchema,
+  insertGroupSchema,
   insertRoomMemberSchema,
   insertRoomSchema,
   messages,
@@ -40,6 +42,17 @@ export const createDmRecord = async (data: z.infer<typeof insertDmSchema>) => {
     .returning();
 
   return dm;
+};
+
+export const createGroupRecord = async (
+  data: z.infer<typeof insertGroupSchema>,
+) => {
+  const [group] = await db
+    .insert(groups)
+    .values(insertGroupSchema.parse(data))
+    .returning();
+
+  return group;
 };
 
 export const getDmByKey = async (dmKey: string) => {

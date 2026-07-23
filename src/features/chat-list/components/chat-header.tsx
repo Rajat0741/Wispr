@@ -1,7 +1,7 @@
 "use client";
 
 import { UserMenu } from "@/components/user-menu";
-import { NewChat } from "@/features/chat-list/components/newChat";
+import { NewChat } from "@/features/chat-list/components/dialogs/new-chat-dialog";
 
 export function ChatHeader({ title = "Chats" }: { title?: string }) {
   return (

@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/features/common/components/user-avatar";
 
 export function ChatHeader({
   title,
@@ -11,13 +11,7 @@ export function ChatHeader({
 }) {
   return (
     <header className="flex items-center gap-3 border-b px-4 py-3">
-      <Avatar>
-        <AvatarImage
-          src={image ?? undefined}
-          alt={`${title}'s avatar`}
-        />
-        <AvatarFallback className="capitalize">{title}</AvatarFallback>
-      </Avatar>
+      <UserAvatar name={title} image={image} className="size-9" />
       <div className="min-w-0">
         <h1 className="truncate text-sm font-semibold">{title}</h1>
         {subtitle && (

@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +35,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { UserAvatar } from "@/features/common/components/user-avatar";
 import { authClient } from "@/lib/auth-client";
 
 interface ProfilePageProps {
@@ -68,7 +68,6 @@ export function ProfilePage({ user }: ProfilePageProps) {
     message: string;
   } | null>(null);
 
-  const initial = user.name.trim().charAt(0).toUpperCase() || "U";
   const displayHandle = username ? `@${username}` : "No username set";
 
   const handleUsernameSubmit = async (
@@ -148,15 +147,12 @@ export function ProfilePage({ user }: ProfilePageProps) {
                 </Badge>
               </div>
 
-              <Avatar
-                size="lg"
+              <UserAvatar
+                name={user.name}
+                image={user.image}
                 className="size-32 ring-2 ring-border ring-offset-2 ring-offset-background"
-              >
-                <AvatarImage src={user.image ?? undefined} alt={user.name} />
-                <AvatarFallback className="bg-muted text-4xl font-semibold text-muted-foreground">
-                  {initial}
-                </AvatarFallback>
-              </Avatar>
+                fallbackClassName="bg-muted text-4xl font-semibold text-muted-foreground"
+              />
 
               <div className="flex flex-col items-center gap-1">
                 <p className="font-medium">{displayHandle}</p>
