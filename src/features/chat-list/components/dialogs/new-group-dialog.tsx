@@ -1,5 +1,6 @@
 "use client";
 
+import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { LoaderCircleIcon, UsersIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -15,12 +16,212 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { createGroup } from "@/features/chat-list/actions/create-group";
 import type { SearchUser } from "@/features/chat-list/components/user-search/user-item";
 import { UserSearch } from "@/features/chat-list/components/user-search/user-search";
 import { UserAvatar } from "@/features/common/components/user-avatar";
+
+function toFieldErrors(errors: readonly unknown[]) {
+  return errors.map((msg) => ({ message: String(msg) }));
+}
+
+interface NewGroupFormProps {
+  onSuccess: (roomId: string) => void;
+  onCancel: () => void;
+}
+
+export function NewGroupForm({ onSuccess, onCancel }: NewGroupFormProps) {
+  const queryClient = useQueryClient();
+
+  const { execute, isExecuting, result } = useAction(createGroup, {
+    onSuccess: async ({ data }) => {
+      if (!data?.roomId) return;
+      await queryClient.invalidateQueries({ queryKey: ["chat-rooms"] });
+      form.reset();
+      onSuccess(data.roomId);
+    },
+  });
+
+  const actionError = result.serverError;
+
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      members: [] as SearchUser[],
+    },
+    onSubmit: async ({ value }) => {
+      if (isExecuting) return;
+      execute({
+        name: value.name.trim(),
+        memberIds: value.members.map((m) => m.id),
+      });
+    },
+  });
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      className="flex flex-col gap-4"
+    >
+      <FieldGroup className="gap-4">
+        {/* Group Name Field */}
+        <form.Field
+          name="name"
+          validators={{
+            onChange: ({ value }) =>
+              !value.trim() ? "Group name is required." : undefined,
+          }}
+        >
+          {(field) => {
+            const hasErrors =
+              field.state.meta.isTouched && field.state.meta.errors.length > 0;
+            const errorObjects = toFieldErrors(field.state.meta.errors);
+
+            return (
+              <Field data-invalid={hasErrors}>
+                <FieldLabel htmlFor={field.name}>Group Name</FieldLabel>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  placeholder="Group Name"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  disabled={isExecuting}
+                  maxLength={100}
+                  autoFocus
+                />
+                {hasErrors ? <FieldError errors={errorObjects} /> : null}
+              </Field>
+            );
+          }}
+        </form.Field>
+
+        {/* Selected Members Field & Search */}
+        <form.Field
+          name="members"
+          validators={{
+            onChange: ({ value }) =>
+              value.length === 0 ? "Select at least 1 member." : undefined,
+          }}
+        >
+          {(field) => {
+            const members = field.state.value;
+            const hasErrors =
+              field.state.meta.isTouched && field.state.meta.errors.length > 0;
+            const errorObjects = toFieldErrors(field.state.meta.errors);
+
+            const toggleMember = (user: SearchUser) => {
+              const exists = members.some((m) => m.id === user.id);
+              if (exists) {
+                field.handleChange(members.filter((m) => m.id !== user.id));
+              } else {
+                field.handleChange([...members, user]);
+              }
+            };
+
+            const removeMember = (userId: string) => {
+              field.handleChange(members.filter((m) => m.id !== userId));
+            };
+
+            return (
+              <>
+                <Field data-invalid={hasErrors}>
+                  <FieldLabel>Selected Members ({members.length})</FieldLabel>
+                  <div className="flex flex-wrap gap-1.5 p-2 bg-muted/40 border border-border min-h-10 items-center">
+                    {members.length === 0 ? (
+                      <span className="text-xs text-muted-foreground italic px-1">
+                        Select at least 1 member below.
+                      </span>
+                    ) : (
+                      members.map((member) => (
+                        <Badge
+                          key={member.id}
+                          variant="outline"
+                          className="flex items-center gap-2 px-2.5 py-3.5 text-base"
+                        >
+                          <UserAvatar
+                            name={member.name}
+                            image={member.image}
+                            className="size-4"
+                            fallbackClassName="text-[10px]"
+                          />
+                          <span className="max-w-25 truncate">
+                            {member.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeMember(member.id)}
+                            disabled={isExecuting}
+                            className="hover:text-destructive transition-colors focus:outline-none"
+                            title={`Remove ${member.name}`}
+                          >
+                            <XIcon className="size-4" />
+                          </button>
+                        </Badge>
+                      ))
+                    )}
+                  </div>
+                  {hasErrors ? <FieldError errors={errorObjects} /> : null}
+                </Field>
+
+                <Field>
+                  <FieldLabel>Add Members</FieldLabel>
+                  <UserSearch
+                    onSelectUser={toggleMember}
+                    selectedUserIds={members.map((m) => m.id)}
+                    disabled={isExecuting}
+                    placeholder="Search users to add to group..."
+                    className="max-h-56 border border-border"
+                  />
+                </Field>
+              </>
+            );
+          }}
+        </form.Field>
+      </FieldGroup>
+
+      {/* Server / Action Error */}
+      {actionError ? <FieldError errors={[{ message: actionError }]} /> : null}
+
+      <DialogFooter className="pt-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isExecuting}
+        >
+          Cancel
+        </Button>
+        <form.Subscribe selector={(state) => state.canSubmit}>
+          {(canSubmit) => (
+            <Button
+              type="submit"
+              disabled={!canSubmit || isExecuting}
+              className="gap-2"
+            >
+              {isExecuting && (
+                <LoaderCircleIcon className="size-4 animate-spin" />
+              )}
+              Create Group
+            </Button>
+          )}
+        </form.Subscribe>
+      </DialogFooter>
+    </form>
+  );
+}
 
 export function NewGroupDialog({
   open,
@@ -30,63 +231,9 @@ export function NewGroupDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
-  const queryClient = useQueryClient();
-
-  const [name, setName] = useState("");
-  const [selectedMembers, setSelectedMembers] = useState<SearchUser[]>([]);
-
-  const { execute, isExecuting, result } = useAction(createGroup, {
-    onSuccess: async ({ data }) => {
-      if (!data?.roomId) return;
-      await queryClient.invalidateQueries({ queryKey: ["chat-rooms"] });
-      onOpenChange(false);
-      resetForm();
-      router.push(`/chat/${data.roomId}`);
-    },
-  });
-
-  const actionError = result.serverError;
-
-  const resetForm = () => {
-    setName("");
-    setSelectedMembers([]);
-  };
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    onOpenChange(nextOpen);
-    if (!nextOpen) {
-      resetForm();
-    }
-  };
-
-  const toggleMember = (user: SearchUser) => {
-    setSelectedMembers((prev) => {
-      const exists = prev.some((m) => m.id === user.id);
-      if (exists) {
-        return prev.filter((m) => m.id !== user.id);
-      }
-      return [...prev, user];
-    });
-  };
-
-  const removeMember = (userId: string) => {
-    setSelectedMembers((prev) => prev.filter((m) => m.id !== userId));
-  };
-
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!name.trim() || selectedMembers.length === 0 || isExecuting) return;
-
-    execute({
-      name: name.trim(),
-      memberIds: selectedMembers.map((m) => m.id),
-    });
-  };
-
-  const isValid = name.trim().length > 0 && selectedMembers.length > 0;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg gap-4">
         <DialogHeader>
           <DialogTitle>Create New Group</DialogTitle>
@@ -95,104 +242,13 @@ export function NewGroupDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Group Name Input */}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="group-name" className="text-sm font-medium">
-              Group Name
-            </Label>
-            <Input
-              id="group-name"
-              placeholder="e.g. Project Team"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={isExecuting}
-              maxLength={100}
-              autoFocus
-            />
-          </div>
-
-          {/* Selected Members Chips */}
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-sm font-medium">
-              Selected Members ({selectedMembers.length})
-            </Label>
-            <div className="flex flex-wrap gap-1.5 p-2 bg-muted/40 rounded-lg border border-border min-h-[3rem] items-center">
-              {selectedMembers.length === 0 ? (
-                <span className="text-xs text-muted-foreground italic px-1">
-                  Select at least 1 member below.
-                </span>
-              ) : (
-                selectedMembers.map((member) => (
-                  <Badge
-                    key={member.id}
-                    variant="secondary"
-                    className="flex items-center gap-1.5 py-1 px-2.5 text-xs font-normal"
-                  >
-                    <UserAvatar
-                      name={member.name}
-                      image={member.image}
-                      className="size-4"
-                      fallbackClassName="text-[10px]"
-                    />
-                    <span className="max-w-[100px] truncate">
-                      {member.name}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeMember(member.id)}
-                      disabled={isExecuting}
-                      className="hover:text-destructive transition-colors focus:outline-none"
-                      title={`Remove ${member.name}`}
-                    >
-                      <XIcon className="size-3" />
-                    </button>
-                  </Badge>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* User Search & Selection */}
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-sm font-medium">Add Members</Label>
-            <UserSearch
-              onSelectUser={toggleMember}
-              selectedUserIds={selectedMembers.map((m) => m.id)}
-              disabled={isExecuting}
-              placeholder="Search users to add to group..."
-              className="max-h-56 rounded-md border border-border"
-            />
-          </div>
-
-          {/* Error Message */}
-          {actionError && (
-            <p className="text-sm text-destructive text-center">
-              {actionError}
-            </p>
-          )}
-
-          <DialogFooter className="pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isExecuting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={!isValid || isExecuting}
-              className="gap-2"
-            >
-              {isExecuting && (
-                <LoaderCircleIcon className="size-4 animate-spin" />
-              )}
-              Create Group
-            </Button>
-          </DialogFooter>
-        </form>
+        <NewGroupForm
+          onSuccess={(roomId) => {
+            onOpenChange(false);
+            router.push(`/chat/${roomId}`);
+          }}
+          onCancel={() => onOpenChange(false)}
+        />
       </DialogContent>
     </Dialog>
   );

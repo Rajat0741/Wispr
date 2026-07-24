@@ -34,7 +34,7 @@ export function ChatList() {
         value={search}
         onValueChange={setSearch}
         className="text-base"
-        wrapperClassName="px-2 py-3 text-foreground"
+        wrapperClassName="p-2 pb-0 text-foreground"
       />
       <CommandList className="max-h-screen">
         {isPending ? (

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Toaster } from "@/components/ui/toast";
 import { Provider } from "../lib/providers/provider";
 import "./globals.css";
 
@@ -36,6 +37,7 @@ export default function RootLayout({
             <ThemeToggle />
           </div>
           {children}
+          <Toaster />
         </Provider>
       </body>
     </html>

@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { ArrowDownIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import {
   Empty,
@@ -73,7 +74,7 @@ export function ChatMessages({
         const lastInGroup = group.length - 1;
 
         return (
-          <MessageGroup key={group[0].id}>
+          <MessageGroup key={group[0].id} className="gap-1">
             {group.map((message, i) => (
               <MessageScrollerItem
                 key={message.id}
@@ -81,8 +82,8 @@ export function ChatMessages({
                 scrollAnchor={isMine && i === lastInGroup}
               >
                 <Message align={isMine ? "end" : "start"}>
-                  {i === lastInGroup && roomType === "group" && (
-                    <MessageAvatar>
+                  {roomType === "group" && (
+                    <MessageAvatar className={cn(i !== lastInGroup && "invisible")}>
                       <UserAvatar
                         name={sender?.name}
                         image={sender?.image}

@@ -31,9 +31,10 @@ export function NewChat() {
     <>
       <Button
         type="button"
-        className="size-8 bg-transparent hover:bg-accent p-4"
+        className="size-8 p-4.5"
         onClick={() => setOpen(true)}
         title="New chat"
+        variant="ghost"
       >
         <RiChatNewLine className="size-5 ml-0.5" />
         <span className="sr-only">New chat</span>
