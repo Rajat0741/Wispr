@@ -1,66 +1,110 @@
 import { and, eq, exists } from "drizzle-orm";
-import type z from "zod";
+import { AppError } from "@/utils/app-error";
 import { db } from "../index";
 import {
   dms,
   groups,
-  insertDmSchema,
-  insertGroupSchema,
-  insertRoomMemberSchema,
-  insertRoomSchema,
   messages,
   roomMembers,
   rooms,
 } from "../schema";
 
-export const createRoom = async (data: z.infer<typeof insertRoomSchema>) => {
-  const { roomType } = insertRoomSchema.parse(data);
-  const [room] = await db
-    .insert(rooms)
-    .values({
-      roomType,
-    })
-    .returning();
+export const createGroupTransaction = async ({
+  name,
+  creatorId,
+  memberIds,
+}: {
+  name: string;
+  creatorId: string;
+  memberIds: string[];
+}) => {
+  return db.transaction(async (tx) => {
+    const [room] = await tx
+      .insert(rooms)
+      .values({ roomType: "group" })
+      .returning();
 
-  return room;
-};
+    if (!room) throw new AppError("Failed to create group conversation.", 500);
 
-export const createRoomMembers = async (
-  data: z.infer<typeof insertRoomMemberSchema>[],
-) => {
-  const parsedData = data.map((item) => insertRoomMemberSchema.parse(item));
-  const members = await db.insert(roomMembers).values(parsedData).returning();
+    await tx.insert(groups).values({
+      roomId: room.id,
+      name,
+      createdBy: creatorId,
+    });
 
-  return members;
-};
+    const membersToInsert = [
+      {
+        roomId: room.id,
+        userId: creatorId,
+        role: "admin" as const,
+      },
+      ...memberIds.map((id) => ({
+        roomId: room.id,
+        userId: id,
+        role: "member" as const,
+      })),
+    ];
 
-export const createDmRecord = async (data: z.infer<typeof insertDmSchema>) => {
-  const [dm] = await db
-    .insert(dms)
-    .values(insertDmSchema.parse(data))
-    .onConflictDoNothing({ target: dms.dmKey })
-    .returning();
+    await tx.insert(roomMembers).values(membersToInsert);
 
-  return dm;
-};
-
-export const createGroupRecord = async (
-  data: z.infer<typeof insertGroupSchema>,
-) => {
-  const [group] = await db
-    .insert(groups)
-    .values(insertGroupSchema.parse(data))
-    .returning();
-
-  return group;
-};
-
-export const getDmByKey = async (dmKey: string) => {
-  const dm = await db.query.dms.findFirst({
-    where: eq(dms.dmKey, dmKey),
+    return room;
   });
+};
 
-  return dm ?? null;
+export const createDmTransaction = async ({
+  user1Id,
+  user2Id,
+  dmKey,
+}: {
+  user1Id: string;
+  user2Id: string;
+  dmKey: string;
+}) => {
+  return db.transaction(async (tx) => {
+    const existingDm = await tx.query.dms.findFirst({
+      where: eq(dms.dmKey, dmKey),
+    });
+
+    if (existingDm) {
+      return { roomId: existingDm.roomId };
+    }
+
+    const [room] = await tx
+      .insert(rooms)
+      .values({ roomType: "dm" })
+      .returning();
+
+    if (!room) throw new AppError("The conversation could not be created.", 500);
+
+    const [dm] = await tx
+      .insert(dms)
+      .values({
+        roomId: room.id,
+        user1Id,
+        user2Id,
+        dmKey,
+      })
+      .onConflictDoNothing({ target: dms.dmKey })
+      .returning();
+
+    if (!dm) {
+      const concurrentDm = await tx.query.dms.findFirst({
+        where: eq(dms.dmKey, dmKey),
+      });
+
+      if (concurrentDm) {
+        return { roomId: concurrentDm.roomId };
+      }
+      throw new AppError("The conversation could not be resolved.", 500);
+    }
+
+    await tx.insert(roomMembers).values([
+      { roomId: room.id, userId: user1Id, role: "admin" },
+      { roomId: room.id, userId: user2Id, role: "admin" },
+    ]);
+
+    return { roomId: room.id };
+  });
 };
 
 export const deleteRoom = async (roomId: string) => {
@@ -130,7 +174,13 @@ export const getRoomMessages = async (roomId: string, limit = 50) => {
     orderBy: (messages, { desc }) => [desc(messages.createdAt)],
     limit,
     with: {
-      sender: true,
+      sender: {
+        columns: {
+          id: true,
+          name: true,
+          image: true,
+        }
+      },
     },
   });
 };

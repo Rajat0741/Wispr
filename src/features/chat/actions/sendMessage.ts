@@ -1,6 +1,7 @@
 "use server";
 
 import z from "zod";
+import type { MessageWithSender } from "@/features/chat/types";
 import { checkUserMembershipInRoom, createMessage } from "@/lib/db/queries";
 import { messageTypeSchema } from "@/lib/db/schema";
 import { authActionClient } from "@/lib/safe-action";
@@ -8,7 +9,11 @@ import { broadcastToRoom } from "@/lib/supabase/server";
 import { AppError } from "@/utils/app-error";
 
 const sendMessageSchema = z.object({
-  message: z.string().trim().min(1, "Message cannot be empty"),
+  message: z
+    .string()
+    .trim()
+    .min(1, "Message cannot be empty")
+    .max(10000, "Message cannot exceed 10,000 characters"),
   roomId: z.string().uuid("Invalid room ID"),
   type: messageTypeSchema,
 });
@@ -29,11 +34,17 @@ export const sendMessage = authActionClient
       type,
     });
 
-    if (!newMessage) {
-      throw new AppError("The message could not be created", 500);
-    }
+    const messageWithSender: MessageWithSender = {
+      ...newMessage,
+      sender: {
+        id: user.id,
+        name: user.name ?? null,
+        image: user.image ?? null,
+      },
+    };
 
-    await broadcastToRoom(roomId, "new-message", newMessage);
+    await broadcastToRoom(roomId, "new-message", messageWithSender);
 
-    return newMessage;
+    return messageWithSender;
   });
+

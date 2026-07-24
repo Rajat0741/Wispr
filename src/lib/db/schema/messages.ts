@@ -64,7 +64,7 @@ export const messagesRelations = relations(messages, ({ one, many }) => ({
 // ---- zod schemas ----
 
 export const insertMessageSchema = createInsertSchema(messages, {
-  content: z.string().min(1).max(4000),
+  content: z.string().min(1).max(10000),
 });
 export const selectMessageSchema = createSelectSchema(messages);
 

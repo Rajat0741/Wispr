@@ -3,8 +3,8 @@
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useState } from "react";
 import { sendMessage } from "@/features/chat/actions/sendMessage";
-import { authClient } from "@/lib/auth-client";
-import type { GroupType, MessageType } from "@/lib/db/schema";
+import type { MessageWithSender } from "@/features/chat/types";
+import type { GroupType } from "@/lib/db/schema";
 import { supabase } from "@/lib/supabase/client";
 import type { User } from "@/types/user";
 import { ChatHeader } from "./chat-header";
@@ -24,12 +24,12 @@ export function RoomChat({
   members: User[];
   roomType: "dm" | "group";
   group?: GroupType | null;
-  initialMessages: MessageType[];
+  initialMessages: MessageWithSender[];
 }) {
-  const { data: session } = authClient.useSession();
-  const activeUserId = initialUserId || session?.user.id;
 
-  const [messages, setMessages] = useState<MessageType[]>(() => {
+  const activeUserId = initialUserId;
+
+  const [messages, setMessages] = useState<MessageWithSender[]>(() => {
     return [...(initialMessages ?? [])].reverse();
   });
 
@@ -42,7 +42,7 @@ export function RoomChat({
       .on(
         "broadcast",
         { event: "new-message" },
-        ({ payload }: { payload: MessageType }) => {
+        ({ payload }: { payload: MessageWithSender }) => {
           if (payload?.id) {
             setMessages((current) =>
               current.some((m) => m.id === payload.id)
@@ -103,7 +103,6 @@ export function RoomChat({
 
       <ChatMessages
         messages={messages}
-        members={members}
         roomType={roomType}
         currentUserId={activeUserId}
       />

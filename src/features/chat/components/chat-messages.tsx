@@ -25,13 +25,12 @@ import {
   MessageScrollerViewport,
 } from "@/components/ui/message-scroller";
 import { UserAvatar } from "@/features/common/components/user-avatar";
-import type { MessageType } from "@/lib/db/schema";
-import type { User } from "@/types/user";
+import type { MessageWithSender } from "@/features/chat/types";
 
 // Groups consecutive messages from the same sender so avatar/name only
 // render once per run, matching MessageGroup's intended usage.
-function groupMessages(messages: MessageType[]) {
-  const groups: MessageType[][] = [];
+function groupMessages(messages: MessageWithSender[]) {
+  const groups: MessageWithSender[][] = [];
   for (const message of messages) {
     const lastGroup = groups[groups.length - 1];
     const lastMessage = lastGroup?.[lastGroup.length - 1];
@@ -46,16 +45,13 @@ function groupMessages(messages: MessageType[]) {
 
 export function ChatMessages({
   messages,
-  members,
   roomType,
   currentUserId,
 }: {
-  messages: MessageType[];
-  members: User[];
+  messages: MessageWithSender[];
   roomType: "dm" | "group";
   currentUserId: string | undefined;
 }) {
-  const memberById = new Map(members.map((member) => [member.id, member]));
   const groupedMessages = groupMessages(messages);
 
   if (!groupedMessages || groupedMessages.length === 0) {
@@ -69,7 +65,7 @@ export function ChatMessages({
   return (
     <ChatMessageListContainer>
       {groupedMessages.map((group) => {
-        const sender = memberById.get(group[0].senderId);
+        const sender = group[0].sender;
         const isMine = group[0].senderId === currentUserId;
         const lastInGroup = group.length - 1;
 

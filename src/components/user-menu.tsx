@@ -30,9 +30,8 @@ export function UserMenu() {
 
   const user = session?.user;
 
-  if (!user && !isPending) {
-    router.push("/login");
-    return null;
+  if (isPending || !user) {
+    return <div className="size-8 rounded-full bg-muted animate-pulse" />;
   }
 
   return (

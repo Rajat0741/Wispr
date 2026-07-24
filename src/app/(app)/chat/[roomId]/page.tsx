@@ -20,6 +20,7 @@ export default async function RoomPage({
 
   return (
     <RoomChat
+      key={roomId}
       roomId={roomId}
       currentUserId={session.user.id}
       members={roomData.room.members.map(({ user }) => user)}

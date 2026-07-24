@@ -1,12 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import {
-  createGroupRecord,
-  createRoom,
-  createRoomMembers,
-  deleteRoom,
-} from "@/lib/db/queries";
+import { createGroupTransaction } from "@/lib/db/queries";
 import { authActionClient } from "@/lib/safe-action";
 import { AppError } from "@/utils/app-error";
 
@@ -29,43 +24,17 @@ export const createGroup = authActionClient
       throw new AppError("Please select at least one member for the group.", 400);
     }
 
-    // 1. Create room
-    const room = await createRoom({
-      roomType: "group",
-    });
-
-    if (!room) {
-      throw new AppError("Failed to create group conversation.", 500);
-    }
-
     try {
-      // 2. Create group record
-      await createGroupRecord({
-        roomId: room.id,
+      const room = await createGroupTransaction({
         name,
-        createdBy: user.id,
+        creatorId: user.id,
+        memberIds: uniqueMemberIds,
       });
-
-      // 3. Create room members (Creator as admin, others as member)
-      const membersToInsert = [
-        {
-          roomId: room.id,
-          userId: user.id,
-          role: "admin" as const,
-        },
-        ...uniqueMemberIds.map((id) => ({
-          roomId: room.id,
-          userId: id,
-          role: "member" as const,
-        })),
-      ];
-
-      await createRoomMembers(membersToInsert);
 
       return { roomId: room.id };
     } catch (err) {
-      await deleteRoom(room.id);
-      console.log("Error creating group:", err);
+      if (err instanceof AppError) throw err;
+      console.error("Error creating group:", err);
       throw new AppError("Could not complete group creation.", 500);
     }
   });
