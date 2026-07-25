@@ -1,12 +1,7 @@
 import { and, eq, exists } from "drizzle-orm";
 import { AppError } from "@/utils/app-error";
 import { db } from "../index";
-import {
-  dms,
-  groups,
-  roomMembers,
-  rooms,
-} from "../schema";
+import { dms, groups, roomMembers, rooms } from "../schema";
 
 export const createGroupTransaction = async ({
   name,
@@ -73,7 +68,8 @@ export const createDmTransaction = async ({
       .values({ roomType: "dm" })
       .returning();
 
-    if (!room) throw new AppError("The conversation could not be created.", 500);
+    if (!room)
+      throw new AppError("The conversation could not be created.", 500);
 
     const [dm] = await tx
       .insert(dms)
@@ -167,14 +163,13 @@ export const getRoomsForUser = async (userId: string) => {
   });
 };
 
-
-export const checkUserMembershipInRoom = async (roomId: string, userId: string) => {
+export const checkUserMembershipInRoom = async (
+  roomId: string,
+  userId: string,
+) => {
   const membership = await db.query.roomMembers.findFirst({
-    where: and(
-      eq(roomMembers.roomId, roomId),
-      eq(roomMembers.userId, userId),
-    ),
+    where: and(eq(roomMembers.roomId, roomId), eq(roomMembers.userId, userId)),
   });
-  
+
   return membership !== undefined;
-}
+};

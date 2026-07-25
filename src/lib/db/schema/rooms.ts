@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   index,
   pgEnum,
   pgTable,
@@ -35,6 +36,7 @@ export const roomMembers = pgTable(
       .notNull()
       .references(() => user.id),
     role: roomRoleEnum("role").default("member"),
+    isPinned: boolean("is_pinned").default(false).notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.roomId, table.userId] }),

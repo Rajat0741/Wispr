@@ -82,28 +82,24 @@ export function NewGroupForm({ onSuccess, onCancel }: NewGroupFormProps) {
           validators={{
             onChange: ({ value }) =>
               !value.trim() ? "Group name is required." : undefined,
+            onSubmit: ({ value }) =>
+              !value.trim() ? "Group name is required." : undefined,
           }}
         >
           {(field) => {
-            const hasErrors =
-              field.state.meta.isTouched && field.state.meta.errors.length > 0;
-            const errorObjects = toFieldErrors(field.state.meta.errors);
-
+            const hasErrors = field.state.meta.errors.length > 0;
             return (
               <Field data-invalid={hasErrors}>
                 <FieldLabel htmlFor={field.name}>Group Name</FieldLabel>
                 <Input
                   id={field.name}
-                  name={field.name}
-                  placeholder="Group Name"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  disabled={isExecuting}
-                  maxLength={100}
-                  autoFocus
                 />
-                {hasErrors ? <FieldError errors={errorObjects} /> : null}
+                {hasErrors ? (
+                  <FieldError errors={toFieldErrors(field.state.meta.errors)} />
+                ) : null}
               </Field>
             );
           }}
@@ -115,12 +111,13 @@ export function NewGroupForm({ onSuccess, onCancel }: NewGroupFormProps) {
           validators={{
             onChange: ({ value }) =>
               value.length === 0 ? "Select at least 1 member." : undefined,
+            onSubmit: ({ value }) =>
+              value.length === 0 ? "Select at least 1 member." : undefined,
           }}
         >
           {(field) => {
             const members = field.state.value;
-            const hasErrors =
-              field.state.meta.isTouched && field.state.meta.errors.length > 0;
+            const hasErrors = field.state.meta.errors.length > 0;
             const errorObjects = toFieldErrors(field.state.meta.errors);
 
             const toggleMember = (user: SearchUser) => {
