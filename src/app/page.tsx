@@ -8,7 +8,7 @@ export default async function Home() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
+    <main className="flex h-full flex-col items-center justify-center px-4 text-center">
       <div className="mx-auto max-w-2xl space-y-8">
         <div className="space-y-4">
           <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">

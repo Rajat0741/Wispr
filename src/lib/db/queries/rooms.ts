@@ -4,7 +4,6 @@ import { db } from "../index";
 import {
   dms,
   groups,
-  messages,
   roomMembers,
   rooms,
 } from "../schema";
@@ -168,22 +167,6 @@ export const getRoomsForUser = async (userId: string) => {
   });
 };
 
-export const getRoomMessages = async (roomId: string, limit = 50) => {
-  return db.query.messages.findMany({
-    where: eq(messages.roomId, roomId),
-    orderBy: (messages, { desc }) => [desc(messages.createdAt)],
-    limit,
-    with: {
-      sender: {
-        columns: {
-          id: true,
-          name: true,
-          image: true,
-        }
-      },
-    },
-  });
-};
 
 export const checkUserMembershipInRoom = async (roomId: string, userId: string) => {
   const membership = await db.query.roomMembers.findFirst({
@@ -193,5 +176,5 @@ export const checkUserMembershipInRoom = async (roomId: string, userId: string) 
     ),
   });
   
-  return membership !== null;
+  return membership !== undefined;
 }

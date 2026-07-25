@@ -8,7 +8,7 @@ export default async function LoginPage() {
   if (session) redirect("/profile");
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
+    <main className="flex h-full items-center justify-center p-4">
       <LoginCard />
     </main>
   );

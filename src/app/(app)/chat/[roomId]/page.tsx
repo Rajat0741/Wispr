@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { ChatHeader } from "@/features/chat/components/chat-header";
 import { RoomChat } from "@/features/chat/components/room-chat";
-import { getRoomMessages, getRoomWithMembers } from "@/lib/db/queries";
+import { getRoomMetadata } from "@/features/chat/utils/getRoomMetadata";
+import { getRoomWithMembers } from "@/lib/db/queries";
 import { getUserSession } from "@/lib/getUser";
 
 export default async function RoomPage({
@@ -16,17 +18,23 @@ export default async function RoomPage({
   const roomData = await getRoomWithMembers(roomId, session.user.id);
   if (!roomData) notFound();
 
-  const dbMessages = await getRoomMessages(roomId, 50);
+  const { room } = roomData;
+  const { title, image, subtitle } = getRoomMetadata(
+    room.roomType,
+    room.members.map(({ user }) => user),
+    session.user.id,
+    room.group,
+  );
 
   return (
-    <RoomChat
-      key={roomId}
-      roomId={roomId}
-      currentUserId={session.user.id}
-      members={roomData.room.members.map(({ user }) => user)}
-      roomType={roomData.room.roomType}
-      group={roomData.room.group}
-      initialMessages={dbMessages}
-    />
+    <div className="flex h-dvh w-full flex-col overflow-hidden bg-background">
+      <ChatHeader title={title} image={image} subtitle={subtitle} />
+      <RoomChat
+        key={roomId}
+        roomId={roomId}
+        currentUserId={session.user.id}
+        roomType={room.roomType}
+      />
+    </div>
   );
 }

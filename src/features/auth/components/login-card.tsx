@@ -59,7 +59,7 @@ export function LoginCard() {
           ) : (
             <FcGoogle aria-hidden="true" className="size-5" />
           )}
-          <span>{isLoading ? "Signing in..." : "Continue with Google"}</span>
+          <span className="text-foreground">{isLoading ? "Signing in..." : "Continue with Google"}</span>
         </Button>
       </CardContent>
     </Card>

@@ -12,9 +12,11 @@ export async function getChatRooms(): Promise<ChatListItem[]> {
   return data ?? [];
 }
 
+export const CHAT_ROOMS_KEY = ["chat-rooms"] as const;
+
 export function useChatRoomsQuery() {
   const query = useQuery({
-    queryKey: ["chat-rooms"],
+    queryKey: CHAT_ROOMS_KEY,
     queryFn: getChatRooms,
   });
 

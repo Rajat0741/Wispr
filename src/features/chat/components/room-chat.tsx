@@ -1,113 +1,26 @@
 "use client";
 
-import { useAction } from "next-safe-action/hooks";
-import { useEffect, useState } from "react";
-import { sendMessage } from "@/features/chat/actions/sendMessage";
-import type { MessageWithSender } from "@/features/chat/types";
-import type { GroupType } from "@/lib/db/schema";
-import { supabase } from "@/lib/supabase/client";
-import type { User } from "@/types/user";
-import { ChatHeader } from "./chat-header";
 import { ChatInput } from "./chat-input";
 import { ChatMessages } from "./chat-messages";
 
 export function RoomChat({
   roomId,
-  currentUserId: initialUserId,
-  members,
+  currentUserId,
   roomType,
-  group,
-  initialMessages,
 }: {
   roomId: string;
-  currentUserId?: string;
-  members: User[];
+  currentUserId: string;
   roomType: "dm" | "group";
-  group?: GroupType | null;
-  initialMessages: MessageWithSender[];
 }) {
-
-  const activeUserId = initialUserId;
-
-  const [messages, setMessages] = useState<MessageWithSender[]>(() => {
-    return [...(initialMessages ?? [])].reverse();
-  });
-
-  useEffect(() => {
-    if (!roomId) return;
-
-    const channel = supabase.channel(`room:${roomId}`);
-
-    channel
-      .on(
-        "broadcast",
-        { event: "new-message" },
-        ({ payload }: { payload: MessageWithSender }) => {
-          if (payload?.id) {
-            setMessages((current) =>
-              current.some((m) => m.id === payload.id)
-                ? current
-                : [...current, payload],
-            );
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [roomId]);
-
-  const { execute } = useAction(sendMessage, {
-    onSuccess: ({ data: newMessage }) => {
-      if (newMessage) {
-        setMessages((current) =>
-          current.some((m) => m.id === newMessage.id)
-            ? current
-            : [...current, newMessage],
-        );
-      }
-    },
-    onError: ({ error }) => {
-      console.error("Failed to send message:", error);
-    },
-  });
-
-  const handleSend = async (text: string) => {
-    execute({ roomId, message: text, type: "text" });
-  };
-
-  const getRoomMetadata = () => {
-    if (roomType === "dm") {
-      const partner = members.find((member) => member.id !== activeUserId);
-      return {
-        title: partner?.name ?? "Direct Message",
-        image: partner?.image ?? null,
-        subtitle: null,
-      };
-    }
-
-    return {
-      title: group?.name ?? `${members.length} members`,
-      image: group?.groupImage ?? null,
-      subtitle: members.map((member) => member.name).join(", "),
-    };
-  };
-
-  const { title: roomTitle, image: roomImage, subtitle: roomSubtitle } = getRoomMetadata();
-
   return (
-    <div className="flex h-screen w-full flex-col bg-background">
-      <ChatHeader title={roomTitle} image={roomImage} subtitle={roomSubtitle} />
-
+    <div className=" relative flex flex-1 min-h-0 w-full flex-col">
       <ChatMessages
-        messages={messages}
+        roomId={roomId}
         roomType={roomType}
-        currentUserId={activeUserId}
+        currentUserId={currentUserId}
       />
 
-      <ChatInput onSend={handleSend} />
+      <ChatInput roomId={roomId} />
     </div>
   );
 }

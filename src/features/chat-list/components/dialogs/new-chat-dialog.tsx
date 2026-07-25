@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { CommandDialog } from "@/components/ui/command";
 import { createDm } from "@/features/chat-list/actions/create-dm";
 import { UserSearch } from "@/features/chat-list/components/user-search/user-search";
+import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
 
 export function NewChat() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function NewChat() {
   const { execute, isExecuting, result } = useAction(createDm, {
     onSuccess: async ({ data }) => {
       if (!data?.roomId) return;
-      await queryClient.invalidateQueries({ queryKey: ["chat-rooms"] });
+      await queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_KEY });
       setOpen(false);
       router.push(`/chat/${data.roomId}`);
     },

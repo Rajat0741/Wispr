@@ -1,5 +1,8 @@
+"use client";
+
+import { useEffect } from "react";
 import { format } from "date-fns";
-import { ArrowDownIcon } from "lucide-react";
+import { ArrowDownIcon, Loader2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import {
@@ -23,8 +26,11 @@ import {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
+  useMessageScrollerScrollable,
 } from "@/components/ui/message-scroller";
+import { ChatMessagesSkeleton } from "./chat-messages-skeleton";
 import { UserAvatar } from "@/features/common/components/user-avatar";
+import { useMessages } from "@/features/chat/queries/useMessages";
 import type { MessageWithSender } from "@/features/chat/types";
 
 // Groups consecutive messages from the same sender so avatar/name only
@@ -44,71 +50,126 @@ function groupMessages(messages: MessageWithSender[]) {
 }
 
 export function ChatMessages({
-  messages,
+  roomId,
   roomType,
   currentUserId,
 }: {
-  messages: MessageWithSender[];
+  roomId: string;
   roomType: "dm" | "group";
   currentUserId: string | undefined;
 }) {
-  const groupedMessages = groupMessages(messages);
+  return (
+    <MessageScrollerProvider autoScroll defaultScrollPosition="end">
+      <ChatMessageList
+        roomId={roomId}
+        roomType={roomType}
+        currentUserId={currentUserId}
+      />
+    </MessageScrollerProvider>
+  );
+}
 
-  if (!groupedMessages || groupedMessages.length === 0) {
-    return (
-      <ChatMessageListContainer>
-        <ChatEmptyState />
-      </ChatMessageListContainer>
-    );
+function ChatMessageList({
+  roomId,
+  roomType,
+  currentUserId,
+}: {
+  roomId: string;
+  roomType: "dm" | "group";
+  currentUserId: string | undefined;
+}) {
+  const {
+    messages,
+    isPending,
+    fetchNextPage,
+    isFetchingNextPage,
+    hasNextPage,
+  } = useMessages(roomId);
+
+  const { start } = useMessageScrollerScrollable();
+
+  useEffect(() => {
+    if (!start && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [start, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  if (isPending) {
+    return <ChatMessagesSkeleton />;
   }
 
-  return (
-    <ChatMessageListContainer>
-      {groupedMessages.map((group) => {
-        const sender = group[0].sender;
-        const isMine = group[0].senderId === currentUserId;
-        const lastInGroup = group.length - 1;
+  const groupedMessages = groupMessages(messages);
 
-        return (
-          <MessageGroup key={group[0].id} className="gap-1">
-            {group.map((message, i) => (
-              <MessageScrollerItem
-                key={message.id}
-                messageId={message.id}
-                scrollAnchor={isMine && i === lastInGroup}
-              >
-                <Message align={isMine ? "end" : "start"}>
-                  {roomType === "group" && (
-                    <MessageAvatar className={cn(i !== lastInGroup && "invisible")}>
-                      <UserAvatar
-                        name={sender?.name}
-                        image={sender?.image}
-                        className="size-7"
-                      />
-                    </MessageAvatar>
-                  )}
-                  <MessageContent>
-                    {roomType === "group" && !isMine && i === 0 && (
-                      <MessageHeader>{sender?.name}</MessageHeader>
-                    )}
-                    <Bubble variant={isMine ? "default" : "muted"}>
-                      <BubbleContent className="whitespace-pre-wrap">
-                        {message.content}
-                      </BubbleContent>
-                    </Bubble>
-                    {i === lastInGroup && (
-                      <MessageFooter>
-                        {format(new Date(message.createdAt), "h:mm a")}
-                      </MessageFooter>
-                    )}
-                  </MessageContent>
-                </Message>
-              </MessageScrollerItem>
-            ))}
-          </MessageGroup>
-        );
-      })}
-    </ChatMessageListContainer>
+  return (
+    <MessageScroller className="flex-1 pb-12">
+      <MessageScrollerViewport className="mask-none [webkit-mask-image:none]">
+        <MessageScrollerContent className="gap-4 px-4 py-5">
+          {isFetchingNextPage && (
+            <div className="flex h-6 items-center justify-center">
+              <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+
+          {groupedMessages.length === 0 ? (
+            <ChatEmptyState />
+          ) : (
+            groupedMessages.map((group) => {
+              const sender = group[0].sender;
+              const isMine = group[0].senderId === currentUserId;
+              const lastInGroup = group.length - 1;
+
+              return (
+                <MessageGroup key={group[0].id} className="gap-1">
+                  {group.map((message, i) => (
+                    <MessageScrollerItem
+                      key={message.id}
+                      messageId={message.id}
+                      scrollAnchor={isMine && i === lastInGroup}
+                    >
+                      <Message align={isMine ? "end" : "start"}>
+                        {roomType === "group" && (
+                          <MessageAvatar
+                            className={cn(i !== lastInGroup && "invisible")}
+                          >
+                            <UserAvatar
+                              name={sender?.name}
+                              image={sender?.image}
+                              className="size-7"
+                            />
+                          </MessageAvatar>
+                        )}
+                        <MessageContent>
+                          {roomType === "group" && !isMine && i === 0 && (
+                            <MessageHeader>{sender?.name}</MessageHeader>
+                          )}
+                          <Bubble variant={isMine ? "default" : "muted"}>
+                            <BubbleContent className="whitespace-pre-wrap">
+                              {message.content}
+                            </BubbleContent>
+                          </Bubble>
+                          {i === lastInGroup && (
+                            <MessageFooter>
+                              {format(new Date(message.createdAt), "h:mm a")}
+                            </MessageFooter>
+                          )}
+                        </MessageContent>
+                      </Message>
+                    </MessageScrollerItem>
+                  ))}
+                </MessageGroup>
+              );
+            })
+          )}
+        </MessageScrollerContent>
+      </MessageScrollerViewport>
+      <MessageScrollerButton
+        size="icon"
+        className="left-auto right-8 size-10 rounded-full shadow-md border border-border bg-background text-foreground hover:bg-muted z-20"
+      >
+        <ArrowDownIcon className="size-5" />
+        <span className="sr-only">Scroll to bottom</span>
+      </MessageScrollerButton>
+    </MessageScroller>
   );
 }
 
@@ -122,26 +183,5 @@ function ChatEmptyState() {
         </EmptyDescription>
       </EmptyHeader>
     </Empty>
-  );
-}
-
-function ChatMessageListContainer({ children }: { children: React.ReactNode }) {
-  return (
-    <MessageScrollerProvider autoScroll defaultScrollPosition="end">
-      <MessageScroller className="flex-1">
-        <MessageScrollerViewport className="mask-none [webkit-mask-image:none]">
-          <MessageScrollerContent className="gap-4 px-4 py-5">
-            {children}
-          </MessageScrollerContent>
-        </MessageScrollerViewport>
-        <MessageScrollerButton
-          size="icon"
-          className="left-auto right-8 size-10 rounded-full shadow-md border border-border bg-background text-foreground hover:bg-muted z-20"
-        >
-          <ArrowDownIcon className="size-5" />
-          <span className="sr-only">Scroll to bottom</span>
-        </MessageScrollerButton>
-      </MessageScroller>
-    </MessageScrollerProvider>
   );
 }

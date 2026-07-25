@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { createGroup } from "@/features/chat-list/actions/create-group";
 import type { SearchUser } from "@/features/chat-list/components/user-search/user-item";
 import { UserSearch } from "@/features/chat-list/components/user-search/user-search";
+import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
 import { UserAvatar } from "@/features/common/components/user-avatar";
 
 function toFieldErrors(errors: readonly unknown[]) {
@@ -43,7 +44,7 @@ export function NewGroupForm({ onSuccess, onCancel }: NewGroupFormProps) {
   const { execute, isExecuting, result } = useAction(createGroup, {
     onSuccess: async ({ data }) => {
       if (!data?.roomId) return;
-      await queryClient.invalidateQueries({ queryKey: ["chat-rooms"] });
+      await queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_KEY });
       form.reset();
       onSuccess(data.roomId);
     },
