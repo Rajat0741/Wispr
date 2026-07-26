@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
 import { format } from "date-fns";
 import { ArrowDownIcon, Loader2Icon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect } from "react";
+import { Streamdown } from "streamdown";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import {
   Empty,
@@ -28,10 +28,11 @@ import {
   MessageScrollerViewport,
   useMessageScrollerScrollable,
 } from "@/components/ui/message-scroller";
-import { ChatMessagesSkeleton } from "./chat-messages-skeleton";
-import { UserAvatar } from "@/features/common/components/user-avatar";
 import { useMessages } from "@/features/chat/queries/useMessages";
 import type { MessageWithSender } from "@/features/chat/types";
+import { UserAvatar } from "@/features/common/components/user-avatar";
+import { cn } from "@/lib/utils";
+import { ChatMessagesSkeleton } from "./chat-messages-skeleton";
 
 // Groups consecutive messages from the same sender so avatar/name only
 // render once per run, matching MessageGroup's intended usage.
@@ -101,7 +102,7 @@ function ChatMessageList({
   const groupedMessages = groupMessages(messages);
 
   return (
-    <MessageScroller className="flex-1 pb-12">
+    <MessageScroller className="flex-1">
       <MessageScrollerViewport className="mask-none [webkit-mask-image:none]">
         <MessageScrollerContent className="gap-4 px-4 py-5">
           {isFetchingNextPage && (
@@ -143,8 +144,8 @@ function ChatMessageList({
                             <MessageHeader>{sender?.name}</MessageHeader>
                           )}
                           <Bubble variant={isMine ? "default" : "muted"}>
-                            <BubbleContent className="whitespace-pre-wrap">
-                              {message.content}
+                            <BubbleContent className="typeset typeset-docs max-w-2xl">
+                              <Streamdown>{message.content}</Streamdown>
                             </BubbleContent>
                           </Bubble>
                           {i === lastInGroup && (
@@ -164,7 +165,7 @@ function ChatMessageList({
       </MessageScrollerViewport>
       <MessageScrollerButton
         size="icon"
-        className="left-auto right-8 size-10 rounded-full shadow-md border border-border bg-background text-foreground hover:bg-muted z-20"
+        className="left-auto right-8 bottom-4 size-10 rounded-full shadow-md border border-border bg-background text-foreground hover:bg-muted z-20"
       >
         <ArrowDownIcon className="size-5" />
         <span className="sr-only">Scroll to bottom</span>

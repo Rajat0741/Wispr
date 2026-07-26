@@ -2,6 +2,7 @@
 
 import { formatDistanceToNowStrict } from "date-fns";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import { CommandItem } from "@/components/ui/command";
 import {
   Item,
@@ -14,7 +15,6 @@ import {
 import { ChatItemActions } from "@/features/chat-list/components/chat-item-actions";
 import { UserAvatar } from "@/features/common/components/user-avatar";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 export type ChatListItem = {
   roomId: string;

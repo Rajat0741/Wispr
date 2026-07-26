@@ -13,7 +13,7 @@ export function RoomChat({
   roomType: "dm" | "group";
 }) {
   return (
-    <div className=" relative flex flex-1 min-h-0 w-full flex-col">
+    <div className="flex flex-1 min-h-0 w-full flex-col">
       <ChatMessages
         roomId={roomId}
         roomType={roomType}

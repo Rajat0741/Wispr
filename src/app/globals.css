@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./typeset.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -122,4 +123,13 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.typeset-docs {
+  --typeset-font-body: var(--font-space-grotesk);
+  --typeset-font-heading: var(--font-space-grotesk);
+  --typeset-font-mono: var(--font-geist-mono);
+  --typeset-size: 14px;
+  --typeset-leading: 1.6;
+  --typeset-flow: 1em;
 }
