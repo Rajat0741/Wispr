@@ -26,18 +26,27 @@ export function ChatInput({ roomId }: { roomId: string }) {
     execute({ roomId, message: text, type: "text" });
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      e.currentTarget.form?.requestSubmit();
+    }
+  };
+
   return (
     <form
       className="shrink-0 w-full px-4 pb-4 pt-2"
       onSubmit={handleSubmit}
     >
       <div className="flex items-end gap-2 border px-2 py-2 rounded-2xl bg-accent">
+        {/* TODO: implement attachment picker */}
         <Button
           type="button"
           variant="ghost"
           size="icon"
           className="size-10 shrink-0 rounded-full"
           aria-label="Add attachment"
+          disabled
         >
           <Plus className="size-5" />
         </Button>
@@ -49,12 +58,7 @@ export function ChatInput({ roomId }: { roomId: string }) {
           maxLength={10000}
           disabled={isPending}
           className="min-h-0 max-h-32 flex-1 resize-none border-0 bg-transparent px-2 py-2 leading-6 focus-visible:ring-0 focus-visible:ring-offset-0"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              e.currentTarget.form?.requestSubmit();
-            }
-          }}
+          onKeyDown={handleKeyDown}
         />
 
         <Button

@@ -1,10 +1,7 @@
 "use client";
 
-import { format } from "date-fns";
 import { ArrowDownIcon, Loader2Icon } from "lucide-react";
 import { useEffect } from "react";
-import { Streamdown } from "streamdown";
-import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import {
   Empty,
   EmptyDescription,
@@ -15,8 +12,6 @@ import {
   Message,
   MessageAvatar,
   MessageContent,
-  MessageFooter,
-  MessageGroup,
   MessageHeader,
 } from "@/components/ui/message";
 import {
@@ -31,24 +26,10 @@ import {
 import { useMessages } from "@/features/chat/queries/useMessages";
 import type { MessageWithSender } from "@/features/chat/types";
 import { UserAvatar } from "@/features/common/components/user-avatar";
-import { cn } from "@/lib/utils";
+import { ChatMessageBubble } from "./chat-message-bubble";
 import { ChatMessagesSkeleton } from "./chat-messages-skeleton";
-
-// Groups consecutive messages from the same sender so avatar/name only
-// render once per run, matching MessageGroup's intended usage.
-function groupMessages(messages: MessageWithSender[]) {
-  const groups: MessageWithSender[][] = [];
-  for (const message of messages) {
-    const lastGroup = groups[groups.length - 1];
-    const lastMessage = lastGroup?.[lastGroup.length - 1];
-    if (lastMessage && lastMessage.senderId === message.senderId) {
-      lastGroup.push(message);
-    } else {
-      groups.push([message]);
-    }
-  }
-  return groups;
-}
+import { groupMessagesByDate } from "@/features/chat/utils/groupMessagesByDate";
+import { Marker, MarkerContent } from "@/components/ui/marker";
 
 export function ChatMessages({
   roomId,
@@ -99,7 +80,8 @@ function ChatMessageList({
     return <ChatMessagesSkeleton />;
   }
 
-  const groupedMessages = groupMessages(messages);
+  const dateGroups = groupMessagesByDate(messages);
+  const lastMessageId = messages[messages.length - 1]?.id;
 
   return (
     <MessageScroller className="flex-1">
@@ -111,55 +93,49 @@ function ChatMessageList({
             </div>
           )}
 
-          {groupedMessages.length === 0 ? (
+          {dateGroups.length === 0 ? (
             <ChatEmptyState />
           ) : (
-            groupedMessages.map((group) => {
-              const sender = group[0].sender;
-              const isMine = group[0].senderId === currentUserId;
-              const lastInGroup = group.length - 1;
+            dateGroups.map((dateGroup) => (
+              <div key={dateGroup.dateLabel} className="flex flex-col gap-3">
+                <Marker className="justify-center my-1">
+                  <MarkerContent className="bg-muted px-2 py-1 rounded-full">{dateGroup.dateLabel}</MarkerContent>
+                </Marker>
+                {dateGroup.messages.map((message) => {
+                  const isMine = message.senderId === currentUserId;
 
-              return (
-                <MessageGroup key={group[0].id} className="gap-1">
-                  {group.map((message, i) => (
+                  return (
                     <MessageScrollerItem
                       key={message.id}
                       messageId={message.id}
-                      scrollAnchor={isMine && i === lastInGroup}
+                      scrollAnchor={isMine && message.id === lastMessageId}
                     >
                       <Message align={isMine ? "end" : "start"}>
-                        {roomType === "group" && (
-                          <MessageAvatar
-                            className={cn(i !== lastInGroup && "invisible")}
-                          >
+                        {roomType === "group" && !isMine && (
+                          <MessageAvatar className="mb-0.5">
                             <UserAvatar
-                              name={sender?.name}
-                              image={sender?.image}
+                              name={message.sender?.name}
+                              image={message.sender?.image}
                               className="size-7"
                             />
                           </MessageAvatar>
                         )}
                         <MessageContent>
-                          {roomType === "group" && !isMine && i === 0 && (
-                            <MessageHeader>{sender?.name}</MessageHeader>
+                          {roomType === "group" && !isMine && message.sender?.name && (
+                            <MessageHeader className="text-[11px]">
+                              <span className="font-semibold text-foreground/90">
+                                {message.sender.name}
+                              </span>
+                            </MessageHeader>
                           )}
-                          <Bubble variant={isMine ? "default" : "muted"}>
-                            <BubbleContent className="typeset typeset-docs max-w-2xl">
-                              <Streamdown>{message.content}</Streamdown>
-                            </BubbleContent>
-                          </Bubble>
-                          {i === lastInGroup && (
-                            <MessageFooter>
-                              {format(new Date(message.createdAt), "h:mm a")}
-                            </MessageFooter>
-                          )}
+                          <ChatMessageBubble message={message} isMine={isMine} />
                         </MessageContent>
                       </Message>
                     </MessageScrollerItem>
-                  ))}
-                </MessageGroup>
-              );
-            })
+                  );
+                })}
+              </div>
+            ))
           )}
         </MessageScrollerContent>
       </MessageScrollerViewport>
