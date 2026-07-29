@@ -106,6 +106,12 @@ export const deleteRoom = async (roomId: string) => {
   await db.delete(rooms).where(eq(rooms.id, roomId));
 };
 
+export const getRoomById = async (roomId: string) => {
+  return db.query.rooms.findFirst({
+    where: eq(rooms.id, roomId),
+  });
+};
+
 // exists check for room membership of user
 export const getRoomWithMembers = async (roomId: string, userId: string) => {
   const room = await db.query.rooms.findFirst({
@@ -167,9 +173,9 @@ export const checkUserMembershipInRoom = async (
   roomId: string,
   userId: string,
 ) => {
-  const membership = await db.query.roomMembers.findFirst({
+  const roomMember = await db.query.roomMembers.findFirst({
     where: and(eq(roomMembers.roomId, roomId), eq(roomMembers.userId, userId)),
   });
 
-  return membership !== undefined;
+  return roomMember;
 };

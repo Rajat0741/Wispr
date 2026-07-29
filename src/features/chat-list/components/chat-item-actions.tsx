@@ -27,8 +27,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { deleteChat } from "@/features/chat-list/actions/delete-chat";
-import { togglePinChat } from "@/features/chat-list/actions/toggle-pin-chat";
 import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
+import { togglePinChat } from "@/features/chat-list/queries/toggle-pin-chat";
 import { cn } from "@/lib/utils";
 
 export function ChatItemActions({
@@ -75,11 +75,12 @@ export function ChatItemActions({
     <>
       <DropdownMenu onOpenChange={onOpenChange}>
         <DropdownMenuTrigger
-          render={<Button variant="ghost" size="icon-xs" className={cn(className)} />}
+          render={
+            <Button variant="ghost" size="icon-xs" className={cn(className)} />
+          }
           aria-label={`Actions for ${roomName}`}
           onClick={(event) => event.stopPropagation()}
-          onPointerDown={(event) => event.stopPropagation()
-          }
+          onPointerDown={(event) => event.stopPropagation()}
         >
           <MoreHorizontalIcon />
         </DropdownMenuTrigger>
