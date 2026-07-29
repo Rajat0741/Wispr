@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import { z } from "zod";
-import { ChatHeader } from "@/features/chat/components/chat-header";
 import { RoomChat } from "@/features/chat/components/room-chat";
-import { getRoomMetadata } from "@/features/chat/utils/getRoomMetadata";
+import { RoomChatProvider } from "@/features/chat/context/room-context";
 import { getRoomWithMembers } from "@/lib/db/queries";
 import { getUserSession } from "@/lib/getUser";
 
@@ -19,22 +18,16 @@ export default async function RoomPage({
   if (!roomData) notFound();
 
   const { room } = roomData;
-  const { title, image, subtitle } = getRoomMetadata(
-    room.roomType,
-    room.members.map(({ user }) => user),
-    session.user.id,
-    room.group,
-  );
 
   return (
-    <div className="flex h-dvh w-full flex-col overflow-hidden bg-background">
-      <ChatHeader title={title} image={image} subtitle={subtitle} />
-      <RoomChat
-        key={roomId}
-        roomId={roomId}
-        currentUserId={session.user.id}
-        roomType={room.roomType}
-      />
-    </div>
+    <RoomChatProvider
+      roomId={roomId}
+      currentUserId={session.user.id}
+      roomType={room.roomType}
+      members={room.members.map(({ user }) => user)}
+      group={room.group}
+    >
+      <RoomChat key={roomId} />
+    </RoomChatProvider>
   );
 }

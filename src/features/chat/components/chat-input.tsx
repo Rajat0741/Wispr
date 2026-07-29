@@ -6,8 +6,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { sendMessage } from "@/features/chat/actions/sendMessage";
+import { useRoomContext } from "@/features/chat/context/room-context";
 
-export function ChatInput({ roomId }: { roomId: string }) {
+export function ChatInput() {
+  const { roomId } = useRoomContext();
   const [inputValue, setInputValue] = useState("");
 
   const { execute, isPending } = useAction(sendMessage, {

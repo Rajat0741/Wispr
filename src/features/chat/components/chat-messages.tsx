@@ -8,6 +8,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Marker, MarkerContent } from "@/components/ui/marker";
 import {
   Message,
   MessageAvatar,
@@ -23,43 +24,24 @@ import {
   MessageScrollerViewport,
   useMessageScrollerScrollable,
 } from "@/components/ui/message-scroller";
+import { useRoomContext } from "@/features/chat/context/room-context";
 import { useMessages } from "@/features/chat/queries/useMessages";
-import type { MessageWithSender } from "@/features/chat/types";
+import { groupMessagesByDate } from "@/features/chat/utils/groupMessagesByDate";
 import { UserAvatar } from "@/features/common/components/user-avatar";
 import { ChatMessageBubble } from "./chat-message-bubble";
 import { ChatMessagesSkeleton } from "./chat-messages-skeleton";
-import { groupMessagesByDate } from "@/features/chat/utils/groupMessagesByDate";
-import { Marker, MarkerContent } from "@/components/ui/marker";
 
-export function ChatMessages({
-  roomId,
-  roomType,
-  currentUserId,
-}: {
-  roomId: string;
-  roomType: "dm" | "group";
-  currentUserId: string | undefined;
-}) {
+export function ChatMessages() {
   return (
     <MessageScrollerProvider autoScroll defaultScrollPosition="end">
-      <ChatMessageList
-        roomId={roomId}
-        roomType={roomType}
-        currentUserId={currentUserId}
-      />
+      <ChatMessageList />
     </MessageScrollerProvider>
   );
 }
 
-function ChatMessageList({
-  roomId,
-  roomType,
-  currentUserId,
-}: {
-  roomId: string;
-  roomType: "dm" | "group";
-  currentUserId: string | undefined;
-}) {
+function ChatMessageList() {
+  const { roomId, roomType, currentUserId } = useRoomContext();
+
   const {
     messages,
     isPending,
@@ -99,7 +81,9 @@ function ChatMessageList({
             dateGroups.map((dateGroup) => (
               <div key={dateGroup.dateLabel} className="flex flex-col gap-3">
                 <Marker className="justify-center my-1">
-                  <MarkerContent className="bg-muted px-2 py-1 rounded-full">{dateGroup.dateLabel}</MarkerContent>
+                  <MarkerContent className="bg-muted px-2 py-1 rounded-full">
+                    {dateGroup.dateLabel}
+                  </MarkerContent>
                 </Marker>
                 {dateGroup.messages.map((message) => {
                   const isMine = message.senderId === currentUserId;
@@ -121,14 +105,19 @@ function ChatMessageList({
                           </MessageAvatar>
                         )}
                         <MessageContent>
-                          {roomType === "group" && !isMine && message.sender?.name && (
-                            <MessageHeader className="text-[11px]">
-                              <span className="font-semibold text-foreground/90">
-                                {message.sender.name}
-                              </span>
-                            </MessageHeader>
-                          )}
-                          <ChatMessageBubble message={message} isMine={isMine} />
+                          {roomType === "group" &&
+                            !isMine &&
+                            message.sender?.name && (
+                              <MessageHeader className="text-[11px]">
+                                <span className="font-semibold text-foreground/90">
+                                  {message.sender.name}
+                                </span>
+                              </MessageHeader>
+                            )}
+                          <ChatMessageBubble
+                            message={message}
+                            isMine={isMine}
+                          />
                         </MessageContent>
                       </Message>
                     </MessageScrollerItem>
