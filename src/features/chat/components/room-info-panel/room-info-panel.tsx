@@ -2,6 +2,7 @@
 
 import { LogOut, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +20,9 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useRoomContext } from "@/features/chat/context/room-context";
-import { DeleteChatDialog } from "@/features/common/components/delete-chat-dialog";
+import { deleteChat } from "@/features/common/actions/delete-chat";
+import { leaveGroup } from "@/features/common/actions/leave-group";
+import { ConfirmDialog } from "@/features/common/components/confirm-dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RoomInfoHeader } from "./room-info-header";
 import { RoomMemberList } from "./room-member-list";
@@ -34,8 +37,27 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
     useRoomContext();
   const isMobile = useIsMobile();
   const isGroup = roomType === "group";
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const router = useRouter();
+
+  const currentUserRole = members.find((m) => m.id === currentUserId)?.role;
+  const isAdmin = currentUserRole === "admin";
+
+  const onSuccess = () => {
+    onOpenChange(false);
+    router.push("/chat");
+  };
+
+  const { execute: executeDelete, isExecuting: isDeleting } = useAction(
+    deleteChat,
+    { onSuccess },
+  );
+
+  const { execute: executeLeave, isExecuting: isLeaving } = useAction(
+    leaveGroup,
+    { onSuccess },
+  );
 
   const content = (
     <div className="flex flex-col gap-6 p-4 overflow-y-auto">
@@ -49,24 +71,38 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
         <RoomMemberList members={members} currentUserId={currentUserId} />
       )}
 
-      <div className="mt-auto pt-4 border-t border-border/40">
-        <Button
-          variant="destructive"
-          className="w-full justify-center gap-2"
-          onClick={() => setConfirmOpen(true)}
-        >
-          {isGroup ? (
-            <>
+      <div className="mt-auto pt-4 border-t border-border/40 flex flex-col gap-2">
+        {isGroup ? (
+          <>
+            <Button
+              variant="destructive"
+              className="w-full justify-center gap-2"
+              onClick={() => setLeaveOpen(true)}
+            >
               <LogOut className="size-4" />
               Leave Group
-            </>
-          ) : (
-            <>
-              <Trash2 className="size-4" />
-              Delete Chat
-            </>
-          )}
-        </Button>
+            </Button>
+            {isAdmin && (
+              <Button
+                variant="outline"
+                className="w-full justify-center gap-2 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash2 className="size-4" />
+                Delete Group
+              </Button>
+            )}
+          </>
+        ) : (
+          <Button
+            variant="destructive"
+            className="w-full justify-center gap-2"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className="size-4" />
+            Delete Chat
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -101,15 +137,28 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
         </Sheet>
       )}
 
-      <DeleteChatDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        roomId={roomId}
-        isGroup={isGroup}
-        onSuccess={() => {
-          onOpenChange(false);
-          router.push("/chat");
-        }}
+      <ConfirmDialog
+        open={leaveOpen}
+        onOpenChange={setLeaveOpen}
+        title="Leave group?"
+        description="You will no longer have access to this group's messages."
+        confirmLabel="Leave group"
+        isLoading={isLeaving}
+        onConfirm={() => executeLeave({ roomId })}
+      />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={isGroup ? "Delete group?" : "Delete conversation?"}
+        description={
+          isGroup
+            ? "This will permanently delete the group and all its messages for everyone."
+            : "This will permanently delete messages for both participants."
+        }
+        confirmLabel={isGroup ? "Delete group" : "Delete"}
+        isLoading={isDeleting}
+        onConfirm={() => executeDelete({ roomId })}
       />
     </>
   );

@@ -5,11 +5,13 @@ import { getRoomMetadata } from "@/features/chat/utils/getRoomMetadata";
 import type { GroupType } from "@/lib/db/schema";
 import type { User } from "@/types/user";
 
+export type RoomMember = User & { role: "admin" | "member" | null };
+
 type RoomData = {
   roomId: string;
   currentUserId: string;
   roomType: "dm" | "group";
-  members: User[];
+  members: RoomMember[];
   group: GroupType | null;
 };
 

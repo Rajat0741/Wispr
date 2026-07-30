@@ -20,7 +20,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
 import { togglePinChat } from "@/features/chat-list/queries/toggle-pin-chat";
-import { DeleteChatDialog } from "@/features/common/components/delete-chat-dialog";
+import { deleteChat } from "@/features/common/actions/delete-chat";
+import { leaveGroup } from "@/features/common/actions/leave-group";
+import { ConfirmDialog } from "@/features/common/components/confirm-dialog";
 import { cn } from "@/lib/utils";
 
 export function ChatItemActions({
@@ -42,7 +44,7 @@ export function ChatItemActions({
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const actionLabel = isGroup ? "Leave group" : "Delete";
 
   const { execute: executePin, isExecuting: isPinning } = useAction(
@@ -51,6 +53,22 @@ export function ChatItemActions({
       onSuccess: () =>
         queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_KEY }),
     },
+  );
+
+  const onActionSuccess = async () => {
+    await queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_KEY });
+    setConfirmOpen(false);
+    if (isActive) router.push("/chat");
+  };
+
+  const { execute: executeDelete, isExecuting: isDeleting } = useAction(
+    deleteChat,
+    { onSuccess: onActionSuccess },
+  );
+
+  const { execute: executeLeave, isExecuting: isLeaving } = useAction(
+    leaveGroup,
+    { onSuccess: onActionSuccess },
   );
 
   return (
@@ -81,7 +99,7 @@ export function ChatItemActions({
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
-            onClick={() => setDeleteOpen(true)}
+            onClick={() => setConfirmOpen(true)}
           >
             <Trash2Icon />
             {actionLabel}
@@ -89,14 +107,22 @@ export function ChatItemActions({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <DeleteChatDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        roomId={roomId}
-        isGroup={isGroup}
-        onSuccess={() => {
-          if (isActive) router.push("/chat");
-        }}
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={isGroup ? "Leave group?" : "Delete conversation?"}
+        description={
+          isGroup
+            ? "Leave this group?"
+            : "This will permanently delete messages for both participants."
+        }
+        confirmLabel={actionLabel}
+        isLoading={isDeleting || isLeaving}
+        onConfirm={() =>
+          isGroup
+            ? executeLeave({ roomId })
+            : executeDelete({ roomId })
+        }
       />
     </>
   );

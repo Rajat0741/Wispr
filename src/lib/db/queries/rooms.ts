@@ -106,6 +106,10 @@ export const deleteRoom = async (roomId: string) => {
   await db.delete(rooms).where(eq(rooms.id, roomId));
 };
 
+export const deleteGroupRoom = async (roomId: string) => {
+  await db.delete(rooms).where(eq(rooms.id, roomId));
+};
+
 export const leaveGroupTransaction = async (
   roomId: string,
   userId: string,

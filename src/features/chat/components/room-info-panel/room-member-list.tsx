@@ -16,11 +16,11 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
+import type { RoomMember } from "@/features/chat/context/room-context";
 import { UserAvatar } from "@/features/common/components/user-avatar";
-import type { User } from "@/types/user";
 
 type MemberItemProps = {
-  member: User;
+  member: RoomMember;
   isMe: boolean;
 };
 
@@ -44,8 +44,16 @@ function MemberItem({ member, isMe }: MemberItemProps) {
         <ItemTitle>
           {member.name}
           {isMe && (
-            <Badge variant="secondary" className="ml-1.5">
+            <Badge variant="default" className="ml-1.5">
               you
+            </Badge>
+          )}
+          {member.role === "admin" && (
+            <Badge
+              variant="outline"
+              className="ml-1.5 text-amber-500 border-amber-500/40 bg-amber-500/10"
+            >
+              admin
             </Badge>
           )}
         </ItemTitle>
@@ -56,7 +64,7 @@ function MemberItem({ member, isMe }: MemberItemProps) {
 }
 
 type RoomMemberListProps = {
-  members: User[];
+  members: RoomMember[];
   currentUserId: string;
 };
 

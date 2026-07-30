@@ -1,11 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import {
-  deleteRoom,
-  getRoomById,
-  leaveGroupTransaction,
-} from "@/lib/db/queries";
+import { deleteGroupRoom, deleteRoom, getRoomById } from "@/lib/db/queries";
 import { roomActionClient } from "@/lib/safe-action";
 import { AppError } from "@/utils/app-error";
 
@@ -15,7 +11,7 @@ const deleteChatSchema = z.object({
 
 export const deleteChat = roomActionClient
   .inputSchema(deleteChatSchema)
-  .action(async ({ parsedInput: { roomId }, ctx: { user, roomData } }) => {
+  .action(async ({ parsedInput: { roomId }, ctx: { roomData } }) => {
     const room = await getRoomById(roomId);
 
     if (!room) {
@@ -30,6 +26,6 @@ export const deleteChat = roomActionClient
       await deleteRoom(roomId);
       return;
     }
-    
-    await leaveGroupTransaction(roomId, user.id);
+
+    await deleteGroupRoom(roomId);
   });
