@@ -1,4 +1,4 @@
-import { and, eq, exists } from "drizzle-orm";
+import { and, count, eq, exists } from "drizzle-orm";
 import { AppError } from "@/utils/app-error";
 import { db } from "../index";
 import { dms, groups, roomMembers, rooms } from "../schema";
@@ -104,6 +104,45 @@ export const createDmTransaction = async ({
 
 export const deleteRoom = async (roomId: string) => {
   await db.delete(rooms).where(eq(rooms.id, roomId));
+};
+
+export const leaveGroupTransaction = async (
+  roomId: string,
+  userId: string,
+) => {
+  await db.transaction(async (tx) => {
+    const leavingMember = await tx.query.roomMembers.findFirst({
+      where: and(
+        eq(roomMembers.roomId, roomId),
+        eq(roomMembers.userId, userId),
+      ),
+    });
+
+    if (leavingMember?.role === "admin") {
+      const [result] = await tx
+        .select({ count: count() })
+        .from(roomMembers)
+        .where(
+          and(
+            eq(roomMembers.roomId, roomId),
+            eq(roomMembers.role, "admin"),
+          ),
+        );
+
+      if ((result?.count ?? 0) <= 1) {
+        throw new AppError(
+          "You are the only admin. Assign another admin before leaving.",
+          400,
+        );
+      }
+    }
+
+    await tx
+      .delete(roomMembers)
+      .where(
+        and(eq(roomMembers.roomId, roomId), eq(roomMembers.userId, userId)),
+      );
+  });
 };
 
 export const getRoomById = async (roomId: string) => {

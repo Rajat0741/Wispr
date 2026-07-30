@@ -13,7 +13,7 @@ export const actionClient = createSafeActionClient({
 });
 
 export const authActionClient = actionClient.use(async ({ next }) => {
-  const session = await getUserSession(); // throws AppError if unauthorized
+  const session = await getUserSession();
   return next({ ctx: { user: session.user, session: session.session } });
 });
 
@@ -29,5 +29,5 @@ export const roomActionClient = authActionClient
       throw new AppError("Conversation not found", 404);
     }
 
-    return next({ ctx: { ...ctx, room: { roomId, roomMember } } });
+    return next({ ctx: { ...ctx, roomData: { roomId, roomMember } } });
   });

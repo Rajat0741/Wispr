@@ -12,23 +12,15 @@ import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteChat } from "@/features/chat-list/actions/delete-chat";
 import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
 import { togglePinChat } from "@/features/chat-list/queries/toggle-pin-chat";
+import { DeleteChatDialog } from "@/features/common/components/delete-chat-dialog";
 import { cn } from "@/lib/utils";
 
 export function ChatItemActions({
@@ -58,16 +50,6 @@ export function ChatItemActions({
     {
       onSuccess: () =>
         queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_KEY }),
-    },
-  );
-  const { execute: executeDelete, isExecuting: isDeleting } = useAction(
-    deleteChat,
-    {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_KEY });
-        setDeleteOpen(false);
-        if (isActive) router.push("/chat");
-      },
     },
   );
 
@@ -106,36 +88,16 @@ export function ChatItemActions({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {isGroup ? "Leave group?" : "Delete conversation?"}
-            </DialogTitle>
-            <DialogDescription>
-              {isGroup
-                ? "You will leave this group and it will be removed from your chat list."
-                : "This will permanently delete this direct message for both participants."}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteOpen(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={isDeleting}
-              onClick={() => executeDelete({ roomId })}
-            >
-              {isDeleting ? "Processing..." : actionLabel}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+      <DeleteChatDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        roomId={roomId}
+        isGroup={isGroup}
+        onSuccess={() => {
+          if (isActive) router.push("/chat");
+        }}
+      />
     </>
   );
 }

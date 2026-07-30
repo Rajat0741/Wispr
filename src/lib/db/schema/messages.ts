@@ -1,6 +1,7 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
+  check,
   index,
   pgEnum,
   pgTable,
@@ -20,6 +21,7 @@ export const messageTypeEnum = pgEnum("message_type", [
   "audio",
   "file",
   "ai",
+  "announcement",
 ]);
 export const messageTypeSchema = z.enum(messageTypeEnum.enumValues);
 
@@ -30,9 +32,7 @@ export const messages = pgTable(
     roomId: uuid("room_id")
       .notNull()
       .references(() => rooms.id, { onDelete: "cascade" }),
-    senderId: text("sender_id")
-      .notNull()
-      .references(() => user.id),
+    senderId: text("sender_id").references(() => user.id),
     type: messageTypeEnum("type").notNull(),
     content: text("content").notNull(),
     replyTo: uuid("reply_to").references((): AnyPgColumn => messages.id, {
@@ -41,7 +41,14 @@ export const messages = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
-    index("messages_room_created_idx").on(table.roomId, table.createdAt),
+    index("messages_room_created_idx").on(
+      table.roomId,
+      table.createdAt,
+    ),
+    check(
+      "messages_sender_or_type_check",
+      sql`"sender_id" IS NOT NULL OR "type" IN ('ai', 'announcement')`,
+    ),
   ],
 );
 
