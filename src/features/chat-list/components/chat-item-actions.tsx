@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "@/components/ui/toast";
 import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
 import { togglePinChat } from "@/features/chat-list/queries/toggle-pin-chat";
 import { deleteChat } from "@/features/common/actions/delete-chat";
@@ -63,12 +64,28 @@ export function ChatItemActions({
 
   const { execute: executeDelete, isExecuting: isDeleting } = useAction(
     deleteChat,
-    { onSuccess: onActionSuccess },
+    {
+      onSuccess: onActionSuccess,
+      onError: ({ error }) => {
+        setConfirmOpen(false);
+        if (error?.thrownError) {
+          toast.add({ title: "Error", description: error.serverError });
+        } else {
+          toast.add({ title: "Error", description: "An unknown error occurred." });
+        }
+      },
+    },
   );
 
   const { execute: executeLeave, isExecuting: isLeaving } = useAction(
     leaveGroup,
-    { onSuccess: onActionSuccess },
+    {
+      onSuccess: onActionSuccess,
+      onError: ({ error }) => {
+        setConfirmOpen(false);
+        toast.add({ title: "Error", description: error.serverError });
+      },
+    },
   );
 
   return (
@@ -119,9 +136,7 @@ export function ChatItemActions({
         confirmLabel={actionLabel}
         isLoading={isDeleting || isLeaving}
         onConfirm={() =>
-          isGroup
-            ? executeLeave({ roomId })
-            : executeDelete({ roomId })
+          isGroup ? executeLeave({ roomId }) : executeDelete({ roomId })
         }
       />
     </>

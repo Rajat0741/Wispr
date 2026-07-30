@@ -28,6 +28,7 @@ import { useRoomContext } from "@/features/chat/context/room-context";
 import { useMessages } from "@/features/chat/queries/useMessages";
 import { groupMessagesByDate } from "@/features/chat/utils/groupMessagesByDate";
 import { UserAvatar } from "@/features/common/components/user-avatar";
+import { ChatAnnouncement } from "./chat-announcement";
 import { ChatMessageBubble } from "./chat-message-bubble";
 import { ChatMessagesSkeleton } from "./chat-messages-skeleton";
 
@@ -86,6 +87,17 @@ function ChatMessageList() {
                   </MarkerContent>
                 </Marker>
                 {dateGroup.messages.map((message) => {
+                  if (message.type === "announcement") {
+                    return (
+                      <MessageScrollerItem
+                        key={message.id}
+                        messageId={message.id}
+                      >
+                        <ChatAnnouncement message={message} />
+                      </MessageScrollerItem>
+                    );
+                  }
+
                   const isMine = message.senderId === currentUserId;
 
                   return (

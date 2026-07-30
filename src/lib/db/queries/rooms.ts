@@ -1,7 +1,14 @@
-import { and, count, eq, exists } from "drizzle-orm";
+import { and, count, eq, exists, inArray } from "drizzle-orm";
 import { AppError } from "@/utils/app-error";
 import { db } from "../index";
-import { dms, groups, roomMembers, rooms } from "../schema";
+import {
+  user as authUser,
+  dms,
+  groups,
+  messages,
+  roomMembers,
+  rooms,
+} from "../schema";
 
 export const createGroupTransaction = async ({
   name,
@@ -42,6 +49,71 @@ export const createGroupTransaction = async ({
     await tx.insert(roomMembers).values(membersToInsert);
 
     return room;
+  });
+};
+
+export const addGroupMemberTransaction = async ({
+  roomId,
+  userIds,
+  addedByName,
+}: {
+  roomId: string;
+  userIds: string[];
+  addedByName: string;
+}) => {
+  return db.transaction(async (tx) => {
+    const group = await tx.query.groups.findFirst({
+      where: eq(groups.roomId, roomId),
+    });
+
+    if (!group) {
+      throw new AppError(
+        "Members can only be added to group conversations.",
+        400,
+      );
+    }
+
+    const members = await tx
+      .insert(roomMembers)
+      .values(
+        userIds.map((userId) => ({
+          roomId,
+          userId,
+          role: "member" as const,
+        })),
+      )
+      .onConflictDoNothing()
+      .returning();
+
+    if (members.length === 0) {
+      throw new AppError(
+        "The selected users are already members of the group.",
+        400,
+      );
+    }
+
+    const addedUsers = await tx.query.user.findMany({
+      where: inArray(
+        authUser.id,
+        members.map((member) => member.userId),
+      ),
+      columns: { id: true, name: true },
+    });
+
+    const addedUserNames = addedUsers
+      .map((addedUser) => addedUser.name)
+      .join(", ");
+
+    const [message] = await tx
+      .insert(messages)
+      .values({
+        roomId,
+        type: "announcement",
+        content: `${addedByName} added ${addedUserNames} to the group.`,
+      })
+      .returning();
+
+    return { members, message };
   });
 };
 
@@ -113,8 +185,9 @@ export const deleteGroupRoom = async (roomId: string) => {
 export const leaveGroupTransaction = async (
   roomId: string,
   userId: string,
+  userName: string,
 ) => {
-  await db.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const leavingMember = await tx.query.roomMembers.findFirst({
       where: and(
         eq(roomMembers.roomId, roomId),
@@ -127,25 +200,33 @@ export const leaveGroupTransaction = async (
         .select({ count: count() })
         .from(roomMembers)
         .where(
-          and(
-            eq(roomMembers.roomId, roomId),
-            eq(roomMembers.role, "admin"),
-          ),
+          and(eq(roomMembers.roomId, roomId), eq(roomMembers.role, "admin")),
         );
 
       if ((result?.count ?? 0) <= 1) {
         throw new AppError(
-          "You are the only admin. Assign another admin before leaving.",
+          "You are the only admin. Assign another admin before leaving or delete the group instead.",
           400,
         );
       }
     }
+
+    const [message] = await tx
+      .insert(messages)
+      .values({
+        roomId,
+        type: "announcement",
+        content: `${userName} left the group.`,
+      })
+      .returning();
 
     await tx
       .delete(roomMembers)
       .where(
         and(eq(roomMembers.roomId, roomId), eq(roomMembers.userId, userId)),
       );
+
+    return message;
   });
 };
 
