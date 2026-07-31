@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,7 +22,7 @@ import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
 import { togglePinChat } from "@/features/chat-list/queries/toggle-pin-chat";
 import { deleteChat } from "@/features/common/actions/delete-chat";
 import { leaveGroup } from "@/features/common/actions/leave-group";
-import { ConfirmDialog } from "@/features/common/components/confirm-dialog";
+import { useConfirm } from "@/lib/providers/confirm-dialog-provider";
 import { cn } from "@/lib/utils";
 
 export function ChatItemActions({
@@ -45,7 +44,7 @@ export function ChatItemActions({
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const confirm = useConfirm();
   const actionLabel = isGroup ? "Leave group" : "Delete";
 
   const { execute: executePin, isExecuting: isPinning } = useAction(
@@ -58,87 +57,67 @@ export function ChatItemActions({
 
   const onActionSuccess = async () => {
     await queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_KEY });
-    setConfirmOpen(false);
     if (isActive) router.push("/chat");
   };
 
-  const { execute: executeDelete, isExecuting: isDeleting } = useAction(
-    deleteChat,
-    {
-      onSuccess: onActionSuccess,
-      onError: ({ error }) => {
-        setConfirmOpen(false);
-        if (error?.thrownError) {
-          toast.add({ title: "Error", description: error.serverError });
-        } else {
-          toast.add({ title: "Error", description: "An unknown error occurred." });
-        }
-      },
-    },
-  );
+  const { executeAsync: executeDeleteAsync } = useAction(deleteChat, {
+    onSuccess: onActionSuccess,
+    onError: ({ error }) =>
+      toast.add({ title: "Error", description: error.serverError }),
+  });
 
-  const { execute: executeLeave, isExecuting: isLeaving } = useAction(
-    leaveGroup,
-    {
-      onSuccess: onActionSuccess,
-      onError: ({ error }) => {
-        setConfirmOpen(false);
-        toast.add({ title: "Error", description: error.serverError });
-      },
+  const { executeAsync: executeLeaveAsync } = useAction(leaveGroup, {
+    onSuccess: onActionSuccess,
+    onError: ({ error }) => {
+      toast.add({ title: "Error", description: error.serverError });
     },
-  );
+  });
+
+  const handleLeaveOrDelete = () =>
+    confirm({
+      title: isGroup ? "Leave group?" : "Delete conversation?",
+      description: isGroup
+        ? "Leave this group?"
+        : "This will permanently delete messages for both participants.",
+      confirmLabel: actionLabel,
+      onConfirm: async () => {
+        await (isGroup ? executeLeaveAsync({ roomId }) : executeDeleteAsync({ roomId }));
+      },
+    });
 
   return (
-    <>
-      <DropdownMenu onOpenChange={onOpenChange}>
-        <DropdownMenuTrigger
-          render={
-            <Button variant="ghost" size="icon-xs" className={cn(className)} />
-          }
-          aria-label={`Actions for ${roomName}`}
-          onClick={(event) => event.stopPropagation()}
-          onPointerDown={(event) => event.stopPropagation()}
+    <DropdownMenu onOpenChange={onOpenChange}>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" size="icon-xs" className={cn(className)} />
+        }
+        aria-label={`Actions for ${roomName}`}
+        onClick={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        <MoreHorizontalIcon />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="right">
+        <DropdownMenuItem onClick={() => router.push(`/chat/${roomId}`)}>
+          <MessageCircleIcon />
+          Open chat
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          disabled={isPinning}
+          onClick={() => executePin({ roomId, isPinned: !isPinned })}
         >
-          <MoreHorizontalIcon />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" side="right">
-          <DropdownMenuItem onClick={() => router.push(`/chat/${roomId}`)}>
-            <MessageCircleIcon />
-            Open chat
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={isPinning}
-            onClick={() => executePin({ roomId, isPinned: !isPinned })}
-          >
-            <PinIcon />
-            {isPinned ? "Unpin" : "Pin"}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setConfirmOpen(true)}
-          >
-            <Trash2Icon />
-            {actionLabel}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <ConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        title={isGroup ? "Leave group?" : "Delete conversation?"}
-        description={
-          isGroup
-            ? "Leave this group?"
-            : "This will permanently delete messages for both participants."
-        }
-        confirmLabel={actionLabel}
-        isLoading={isDeleting || isLeaving}
-        onConfirm={() =>
-          isGroup ? executeLeave({ roomId }) : executeDelete({ roomId })
-        }
-      />
-    </>
+          <PinIcon />
+          {isPinned ? "Unpin" : "Pin"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={handleLeaveOrDelete}
+        >
+          <Trash2Icon />
+          {actionLabel}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

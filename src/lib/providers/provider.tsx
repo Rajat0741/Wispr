@@ -3,6 +3,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
+import { ConfirmDialogProvider } from "./confirm-dialog-provider";
 import { getQueryClient } from "./get-query-clients";
 
 export function Provider({ children }: { children: ReactNode }) {
@@ -10,7 +11,9 @@ export function Provider({ children }: { children: ReactNode }) {
 
   return (
     <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

@@ -23,7 +23,7 @@ export function ChatHeader({ onClick }: { onClick?: () => void }) {
           )}
         </div>
       </Button>
-      <ChatHeaderActions />
+      <ChatHeaderActions onOpenInfo={onClick} />
     </header>
   );
 }
