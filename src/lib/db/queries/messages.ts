@@ -1,15 +1,62 @@
-import type z from "zod";
 import { and, eq, lt } from "drizzle-orm";
+import type z from "zod";
 import { db } from "@/lib/db";
 import { type insertMessageSchema, messages } from "../schema";
 
 const MESSAGE_PAGE_SIZE = 50;
+
+const defaultMessageWithRelations = {
+  with: {
+    sender: {
+      columns: {
+        id: true,
+        name: true,
+        image: true,
+      },
+    },
+    replyTo: {
+      columns: {
+        id: true,
+        type: true,
+        content: true,
+        createdAt: true,
+      },
+      with: {
+        sender: {
+          columns: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+    },
+  },
+} as const;
 
 export const createMessage = async (
   messageData: z.infer<typeof insertMessageSchema>,
 ) => {
   const response = await db.insert(messages).values(messageData).returning();
   return response[0];
+};
+
+export const getMessageById = async (roomId: string, messageId: string) =>
+  db.query.messages.findFirst({
+    where: and(eq(messages.roomId, roomId), eq(messages.id, messageId)),
+    ...defaultMessageWithRelations,
+  });
+
+export const checkMessageExistsInRoom = async (
+  roomId: string,
+  messageId: string,
+) => {
+  const [existing] = await db
+    .select({ id: messages.id })
+    .from(messages)
+    .where(and(eq(messages.roomId, roomId), eq(messages.id, messageId)))
+    .limit(1);
+  return !!existing;
 };
 
 /**
@@ -29,15 +76,7 @@ export const getRoomMessagesPaginated = async (
     where,
     orderBy: (messages, { desc }) => [desc(messages.createdAt)],
     limit: MESSAGE_PAGE_SIZE,
-    with: {
-      sender: {
-        columns: {
-          id: true,
-          name: true,
-          image: true,
-        },
-      },
-    },
+    ...defaultMessageWithRelations,
   });
 
   const nextCursor =

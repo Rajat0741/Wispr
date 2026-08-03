@@ -16,7 +16,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import type { RoomMember } from "@/features/chat/context/room-context";
+import type { RoomMember } from "@/features/chat/context/chat-store";
 import { UserAvatar } from "@/features/common/components/user-avatar";
 
 type MemberItemProps = {

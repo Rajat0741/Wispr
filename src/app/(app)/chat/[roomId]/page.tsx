@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { z } from "zod";
-import { RoomChat } from "@/features/chat/components/room-chat";
-import { RoomChatProvider } from "@/features/chat/context/room-context";
+import { ChatProvider } from "@/features/chat/components/layout/chat-provider";
+import { RoomChat } from "@/features/chat/components/layout/room-chat";
 import { getRoomWithMembers } from "@/lib/db/queries";
 import { getUserSession } from "@/lib/getUser";
 
@@ -20,7 +20,7 @@ export default async function RoomPage({
   const { room } = roomData;
 
   return (
-    <RoomChatProvider
+    <ChatProvider
       roomId={roomId}
       currentUserId={session.user.id}
       roomType={room.roomType}
@@ -28,6 +28,6 @@ export default async function RoomPage({
       group={room.group}
     >
       <RoomChat key={roomId} />
-    </RoomChatProvider>
+    </ChatProvider>
   );
 }

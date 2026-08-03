@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { ChatHeader } from "./chat-header";
 import { ChatInput } from "./chat-input";
-import { ChatMessages } from "./chat-messages";
-import { RoomInfoPanel } from "./room-info-panel";
+import { ChatMessages } from "../messages/chat-messages";
+import { RoomInfoPanel } from "../panels/room-info-panel/room-info-panel";
 
 export function RoomChat() {
   const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false);
@@ -18,10 +18,7 @@ export function RoomChat() {
         <ChatInput />
       </div>
 
-      <RoomInfoPanel
-        open={isInfoPanelOpen}
-        onOpenChange={setIsInfoPanelOpen}
-      />
+      <RoomInfoPanel open={isInfoPanelOpen} onOpenChange={setIsInfoPanelOpen} />
     </div>
   );
 }

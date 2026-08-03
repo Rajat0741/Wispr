@@ -18,7 +18,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useRoomContext } from "@/features/chat/context/room-context";
+import { useChatStore } from "@/features/chat/components/layout/chat-provider";
 import { deleteChat } from "@/features/common/actions/delete-chat";
 import { leaveGroup } from "@/features/common/actions/leave-group";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -32,16 +32,14 @@ type RoomInfoPanelProps = {
 };
 
 export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
-  const {
-    title,
-    image,
-    subtitle,
-    members,
-    roomType,
-    currentUserId,
-    group,
-    roomId,
-  } = useRoomContext();
+  const title = useChatStore((s) => s.title);
+  const image = useChatStore((s) => s.image);
+  const subtitle = useChatStore((s) => s.subtitle);
+  const members = useChatStore((s) => s.members);
+  const roomType = useChatStore((s) => s.roomType);
+  const currentUserId = useChatStore((s) => s.currentUserId);
+  const group = useChatStore((s) => s.group);
+  const roomId = useChatStore((s) => s.roomId);
   const isMobile = useIsMobile();
   const isGroup = roomType === "group";
   const router = useRouter();

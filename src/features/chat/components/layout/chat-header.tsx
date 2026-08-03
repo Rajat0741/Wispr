@@ -1,12 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useRoomContext } from "@/features/chat/context/room-context";
+import { useChatStore } from "@/features/chat/components/layout/chat-provider";
 import { UserAvatar } from "@/features/common/components/user-avatar";
-import { ChatHeaderActions } from "./chat-header-actions";
+import { ChatHeaderActions } from "../actions/chat-header-actions";
 
 export function ChatHeader({ onClick }: { onClick?: () => void }) {
-  const { title, image, subtitle } = useRoomContext();
+  const title = useChatStore((s) => s.title);
+  const image = useChatStore((s) => s.image);
+  const subtitle = useChatStore((s) => s.subtitle);
 
   return (
     <header className="flex items-center justify-between border-b px-4 py-2">

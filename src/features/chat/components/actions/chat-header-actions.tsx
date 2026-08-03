@@ -20,17 +20,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/toast";
 import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
-import { useRoomContext } from "@/features/chat/context/room-context";
+import { useChatStore } from "@/features/chat/components/layout/chat-provider";
 import { leaveGroup } from "@/features/common/actions/leave-group";
 import { useConfirm } from "@/lib/providers/confirm-dialog-provider";
-import { AddGroupMemberDialog } from "./add-group-member-dialog";
+import { AddGroupMemberDialog } from "../dialogs/add-group-member-dialog";
 
 interface ChatHeaderActionsProps {
   onOpenInfo?: () => void;
 }
 
 export function ChatHeaderActions({ onOpenInfo }: ChatHeaderActionsProps) {
-  const { roomId, roomType, members, currentUserId } = useRoomContext();
+  const roomId = useChatStore((s) => s.roomId);
+  const roomType = useChatStore((s) => s.roomType);
+  const members = useChatStore((s) => s.members);
+  const currentUserId = useChatStore((s) => s.currentUserId);
   const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();

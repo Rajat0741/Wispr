@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDownIcon, Loader2Icon } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Empty,
   EmptyDescription,
@@ -22,15 +22,19 @@ import {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
+  useMessageScroller,
   useMessageScrollerScrollable,
 } from "@/components/ui/message-scroller";
-import { useRoomContext } from "@/features/chat/context/room-context";
+import { useChatStore } from "@/features/chat/components/layout/chat-provider";
 import { useMessages } from "@/features/chat/queries/useMessages";
+import type { MessageWithSender } from "@/features/chat/types";
 import { groupMessagesByDate } from "@/features/chat/utils/groupMessagesByDate";
 import { UserAvatar } from "@/features/common/components/user-avatar";
+import { cn } from "@/lib/utils";
+import { ReplyTargetPanel } from "../panels/reply-target-panel";
+import { ChatMessagesSkeleton } from "../skeletons/chat-messages-skeleton";
 import { ChatAnnouncement } from "./chat-announcement";
 import { ChatMessageBubble } from "./chat-message-bubble";
-import { ChatMessagesSkeleton } from "./chat-messages-skeleton";
 
 export function ChatMessages() {
   return (
@@ -41,7 +45,9 @@ export function ChatMessages() {
 }
 
 function ChatMessageList() {
-  const { roomId, roomType, currentUserId } = useRoomContext();
+  const roomId = useChatStore((s) => s.roomId);
+  const roomType = useChatStore((s) => s.roomType);
+  const currentUserId = useChatStore((s) => s.currentUserId);
 
   const {
     messages,
@@ -51,13 +57,54 @@ function ChatMessageList() {
     hasNextPage,
   } = useMessages(roomId);
 
+  const { scrollToMessage } = useMessageScroller();
   const { start } = useMessageScrollerScrollable();
+  const [highlightedMessageId, setHighlightedMessageId] = useState<
+    string | null
+  >(null);
+
+  type ReplyTarget = NonNullable<MessageWithSender["replyTo"]>;
+  const [replyTargetPanel, setReplyTargetPanel] = useState<ReplyTarget | null>(
+    null,
+  );
+
+  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!start && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [start, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  useEffect(
+    () => () => {
+      if (highlightTimer.current) clearTimeout(highlightTimer.current);
+    },
+    [],
+  );
+
+  const highlightMessage = (messageId: string) => {
+    setHighlightedMessageId(messageId);
+    if (highlightTimer.current) clearTimeout(highlightTimer.current);
+    highlightTimer.current = setTimeout(() => {
+      setHighlightedMessageId(null);
+    }, 1500);
+  };
+
+  const handleReplyTargetClick = (
+    replyTarget: NonNullable<MessageWithSender["replyTo"]>,
+  ) => {
+    const scrolled = scrollToMessage(replyTarget.id, {
+      behavior: "smooth",
+      align: "center",
+    });
+
+    if (scrolled) {
+      highlightMessage(replyTarget.id);
+    } else {
+      setReplyTargetPanel(replyTarget);
+    }
+  };
 
   if (isPending) {
     return <ChatMessagesSkeleton />;
@@ -105,6 +152,11 @@ function ChatMessageList() {
                       key={message.id}
                       messageId={message.id}
                       scrollAnchor={isMine && message.id === lastMessageId}
+                      className={cn(
+                        "rounded-lg transition-colors",
+                        highlightedMessageId === message.id &&
+                          "bg-primary/10 ring-2 ring-primary/40",
+                      )}
                     >
                       <Message align={isMine ? "end" : "start"}>
                         {roomType === "group" && !isMine && (
@@ -129,6 +181,7 @@ function ChatMessageList() {
                           <ChatMessageBubble
                             message={message}
                             isMine={isMine}
+                            onReplyTargetClick={handleReplyTargetClick}
                           />
                         </MessageContent>
                       </Message>
@@ -147,6 +200,12 @@ function ChatMessageList() {
         <ArrowDownIcon className="size-5" />
         <span className="sr-only">Scroll to bottom</span>
       </MessageScrollerButton>
+      <ReplyTargetPanel
+        replyTarget={replyTargetPanel}
+        onOpenChange={(open) => {
+          if (!open) setReplyTargetPanel(null);
+        }}
+      />
     </MessageScroller>
   );
 }
