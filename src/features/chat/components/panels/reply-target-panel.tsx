@@ -17,12 +17,6 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -33,7 +27,7 @@ import type { MessageWithSender } from "@/features/chat/types";
 import { UserAvatar } from "@/features/common/components/user-avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-type ReplyTarget = NonNullable<MessageWithSender["replyTo"]>;
+type ReplyTarget = NonNullable<MessageWithSender["replyToMessage"]>;
 
 type ReplyTargetPanelProps = {
   replyTarget: ReplyTarget | null;
@@ -60,7 +54,7 @@ function ReplyMessageCard({ message }: { message: ReplyTarget }) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">
+        <p className="whitespace-pre-wrap wrap-break-word text-sm">
           {message.content}
         </p>
       </CardContent>
@@ -73,25 +67,14 @@ export function ReplyTargetPanel({
   onOpenChange,
 }: ReplyTargetPanelProps) {
   const isMobile = useIsMobile();
-    const title = replyTarget ? "Message reply" : "Message not found";
-  const description = replyTarget
-    ? `Message from ${replyTarget.sender?.name || "Unknown sender"}`
-    : "The original message was deleted.";
+  const title = "Message reply";
+  const description = `Message from ${replyTarget?.sender?.name || "Unknown sender"}`;
 
   const content = replyTarget ? (
     <div className="p-4">
       <ReplyMessageCard message={replyTarget} />
     </div>
-  ) : (
-    <Empty className="min-h-0 flex-none p-4">
-      <EmptyHeader>
-        <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>
-          The original message could not be loaded.
-        </EmptyDescription>
-      </EmptyHeader>
-    </Empty>
-  );
+  ) : null;
 
   return isMobile ? (
     <Drawer open={!!replyTarget} onOpenChange={onOpenChange} showSwipeHandle>

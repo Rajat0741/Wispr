@@ -1,6 +1,8 @@
 "use server";
 
 import { z } from "zod";
+import { CHAT_EVENTS } from "@/features/chat/constants";
+import type { MessageWithSender } from "@/features/chat/types";
 import { leaveGroupTransaction } from "@/lib/db/queries";
 import { roomActionClient } from "@/lib/safe-action";
 import { broadcastToRoom } from "@/lib/supabase/server";
@@ -18,8 +20,13 @@ export const leaveGroup = roomActionClient
       user.name ?? "A user",
     );
 
-    await broadcastToRoom(roomId, "new-message", {
-      ...message,
-      sender: null,
-    });
+    await broadcastToRoom<MessageWithSender>(
+      roomId,
+      CHAT_EVENTS.MESSAGE_UPDATES,
+      {
+        ...message,
+        sender: null,
+        replyToMessage: null,
+      },
+    );
   });

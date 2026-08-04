@@ -1,11 +1,9 @@
-"use client"
+"use client";
 
-import { useEffect } from "react";
-import {
-  useInfiniteQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
 import { betterFetch } from "@better-fetch/fetch";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { CHAT_EVENTS } from "@/features/chat/constants";
 import type { MessageWithSender } from "@/features/chat/types";
 import { supabase } from "@/lib/supabase/client";
 
@@ -23,7 +21,7 @@ async function fetchMessagesPage(
   );
 
   if (error) throw new Error(error.message || `Failed to fetch messages`);
-  return data!;
+  return data;
 }
 
 export function useMessages(roomId: string) {
@@ -44,22 +42,50 @@ export function useMessages(roomId: string) {
     channel
       .on(
         "broadcast",
-        { event: "new-message" },
+        { event: CHAT_EVENTS.MESSAGE_UPDATES },
         ({ payload }: { payload: MessageWithSender }) => {
           if (!payload?.id) return;
 
-          queryClient.setQueryData<typeof query.data>(queryKey, (cachedData) => {
-            const firstPage = cachedData?.pages[0];
-            if (!firstPage) return cachedData;
+          queryClient.setQueryData<typeof query.data>(
+            queryKey,
+            (cachedData) => {
+              if (!cachedData?.pages?.length) return cachedData;
 
-            return {
-              ...cachedData,
-              pages: [
-                { ...firstPage, messages: [payload, ...firstPage.messages] },
-                ...cachedData.pages.slice(1),
-              ],
-            };
-          });
+              let exists = false;
+
+              const newPages = cachedData.pages.map((page) => {
+                const hasMessage = page.messages.some(
+                  (m) => m.id === payload.id,
+                );
+                if (hasMessage) {
+                  exists = true;
+                  return {
+                    ...page,
+                    messages: page.messages.map((m) =>
+                      m.id === payload.id ? payload : m,
+                    ),
+                  };
+                }
+                return page;
+              });
+
+              if (exists) {
+                return { ...cachedData, pages: newPages };
+              }
+
+              const firstPage = cachedData.pages[0];
+              return {
+                ...cachedData,
+                pages: [
+                  {
+                    ...firstPage,
+                    messages: [payload, ...firstPage.messages],
+                  },
+                  ...cachedData.pages.slice(1),
+                ],
+              };
+            },
+          );
         },
       )
       .subscribe();
@@ -69,15 +95,10 @@ export function useMessages(roomId: string) {
     };
   }, [roomId, queryClient, queryKey]);
 
-  /**
-   * Flatten all pages into a single chronological array.
-   * Each page is descending (newest-first), so we reverse each page
-   * then reverse the page order to get oldest → newest.
-   */
   const messages = (query.data?.pages ?? [])
     .slice()
     .reverse()
-    .flatMap((page) => page.messages.slice().reverse());
+    .flatMap((page) => page.messages.slice().reverse())
 
   return {
     messages,

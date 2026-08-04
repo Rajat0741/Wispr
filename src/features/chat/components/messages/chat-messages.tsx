@@ -35,6 +35,7 @@ import { ReplyTargetPanel } from "../panels/reply-target-panel";
 import { ChatMessagesSkeleton } from "../skeletons/chat-messages-skeleton";
 import { ChatAnnouncement } from "./chat-announcement";
 import { ChatMessageBubble } from "./chat-message-bubble";
+import { ChatMessageContextMenu } from "./chat-message-context-menu";
 
 export function ChatMessages() {
   return (
@@ -63,7 +64,7 @@ function ChatMessageList() {
     string | null
   >(null);
 
-  type ReplyTarget = NonNullable<MessageWithSender["replyTo"]>;
+  type ReplyTarget = NonNullable<MessageWithSender["replyToMessage"]>;
   const [replyTargetPanel, setReplyTargetPanel] = useState<ReplyTarget | null>(
     null,
   );
@@ -92,7 +93,7 @@ function ChatMessageList() {
   };
 
   const handleReplyTargetClick = (
-    replyTarget: NonNullable<MessageWithSender["replyTo"]>,
+    replyTarget: NonNullable<MessageWithSender["replyToMessage"]>,
   ) => {
     const scrolled = scrollToMessage(replyTarget.id, {
       behavior: "smooth",
@@ -178,11 +179,13 @@ function ChatMessageList() {
                                 </span>
                               </MessageHeader>
                             )}
-                          <ChatMessageBubble
-                            message={message}
-                            isMine={isMine}
-                            onReplyTargetClick={handleReplyTargetClick}
-                          />
+                          <ChatMessageContextMenu message={message}>
+                            <ChatMessageBubble
+                              message={message}
+                              isMine={isMine}
+                              onReplyTargetClick={handleReplyTargetClick}
+                            />
+                          </ChatMessageContextMenu>
                         </MessageContent>
                       </Message>
                     </MessageScrollerItem>

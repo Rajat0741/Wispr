@@ -1,12 +1,9 @@
 "use server";
 
 import z from "zod";
-import type { MessageWithSender } from "@/features/chat/types";
-import {
-  checkMessageExistsInRoom,
-  createMessage,
-  getMessageById,
-} from "@/lib/db/queries";
+import { CHAT_EVENTS } from "@/features/chat/constants";
+import type { MessageUpdatePayload, MessageWithSender } from "@/features/chat/types";
+import { createMessage, getMessageById } from "@/lib/db/queries";
 import { messageTypeSchema } from "@/lib/db/schema";
 import { roomActionClient } from "@/lib/safe-action";
 import { broadcastToRoom } from "@/lib/supabase/server";
@@ -30,14 +27,16 @@ export const sendMessage = roomActionClient
       ctx: { user },
       parsedInput: { message, roomId, type, replyTo },
     }) => {
-      if (replyTo) {
-        const exists = await checkMessageExistsInRoom(roomId, replyTo);
-        if (!exists) {
-          throw new AppError(
-            "The message you are replying to was not found in this conversation.",
-            400,
-          );
-        }
+
+      const replyToMessage = replyTo
+        ? await getMessageById(roomId, replyTo)
+        : undefined;
+
+      if (replyTo && !replyToMessage) {
+        throw new AppError(
+          "The message you are replying to was not found in this conversation.",
+          400,
+        );
       }
 
       const newMessage = await createMessage({
@@ -48,20 +47,19 @@ export const sendMessage = roomActionClient
         replyTo: replyTo ?? null,
       });
 
-      const messageWithSender = await getMessageById(
-        roomId,
-        newMessage.id,
-      );
-      if (!messageWithSender) {
-        throw new AppError(
-          "The message could not be loaded after sending.",
-          500,
-        );
-      }
+      const messageWithSender: MessageWithSender = {
+        ...newMessage,
+        sender: {
+          id: user.id,
+          name: user.name ?? null,
+          image: user.image ?? null,
+        },
+        replyToMessage: replyToMessage ?? null,
+      };
 
       await broadcastToRoom<MessageWithSender>(
         roomId,
-        "new-message",
+        CHAT_EVENTS.MESSAGE_UPDATES,
         messageWithSender,
       );
 

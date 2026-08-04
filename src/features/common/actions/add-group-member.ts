@@ -1,6 +1,8 @@
 "use server";
 
 import { z } from "zod";
+import { CHAT_EVENTS } from "@/features/chat/constants";
+import type { MessageWithSender } from "@/features/chat/types";
 import { addGroupMemberTransaction } from "@/lib/db/queries";
 import { roomActionClient } from "@/lib/safe-action";
 import { broadcastToRoom } from "@/lib/supabase/server";
@@ -37,10 +39,15 @@ export const addGroupMember = roomActionClient
         throw new AppError("Could not add this user to the group.", 500);
       }
 
-      await broadcastToRoom(roomId, "new-message", {
-        ...message,
-        sender: null,
-      });
+      await broadcastToRoom<MessageWithSender>(
+        roomId,
+        CHAT_EVENTS.MESSAGE_UPDATES,
+        {
+          ...message,
+          sender: null,
+          replyToMessage: null,
+        },
+      );
 
       return {
         userIds: members.map((member) => member.userId),

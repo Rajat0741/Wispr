@@ -14,11 +14,12 @@ const defaultMessageWithRelations = {
         image: true,
       },
     },
-    replyTo: {
+    replyToMessage: {
       columns: {
         id: true,
         type: true,
         content: true,
+        isDeleted: true,
         createdAt: true,
       },
       with: {
@@ -47,17 +48,6 @@ export const getMessageById = async (roomId: string, messageId: string) =>
     ...defaultMessageWithRelations,
   });
 
-export const checkMessageExistsInRoom = async (
-  roomId: string,
-  messageId: string,
-) => {
-  const [existing] = await db
-    .select({ id: messages.id })
-    .from(messages)
-    .where(and(eq(messages.roomId, roomId), eq(messages.id, messageId)))
-    .limit(1);
-  return !!existing;
-};
 
 /**
  * Cursor-based paginated messages for infinite scroll.
@@ -68,9 +58,14 @@ export const getRoomMessagesPaginated = async (
   roomId: string,
   cursor?: string,
 ) => {
+  const baseWhere = and(
+    eq(messages.roomId, roomId),
+    eq(messages.isDeleted, false),
+  );
+
   const where = cursor
-    ? and(eq(messages.roomId, roomId), lt(messages.createdAt, new Date(cursor)))
-    : eq(messages.roomId, roomId);
+    ? and(baseWhere, lt(messages.createdAt, new Date(cursor)))
+    : baseWhere;
 
   const rows = await db.query.messages.findMany({
     where,
@@ -85,4 +80,14 @@ export const getRoomMessagesPaginated = async (
       : null;
 
   return { messages: rows, nextCursor };
+};
+
+export const deleteMessageInRoom = async (
+  roomId: string,
+  messageId: string,
+) => {
+  await db
+    .update(messages)
+    .set({ isDeleted: true, content: "Deleted Message" })
+    .where(and(eq(messages.roomId, roomId), eq(messages.id, messageId)));
 };

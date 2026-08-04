@@ -50,6 +50,3 @@ export function useChatStore<T>(selector: (state: ChatState) => T): T {
   return useStore(store, selector);
 }
 
-export function useRoomContext(): ChatState {
-  return useChatStore((state) => state);
-}

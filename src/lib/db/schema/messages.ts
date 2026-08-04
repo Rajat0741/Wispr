@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
+  boolean,
   check,
   index,
   pgEnum,
@@ -35,9 +36,8 @@ export const messages = pgTable(
     senderId: text("sender_id").references(() => user.id),
     type: messageTypeEnum("type").notNull(),
     content: text("content").notNull(),
-    replyTo: uuid("reply_to").references((): AnyPgColumn => messages.id, {
-      onDelete: "set null",
-    }),
+    isDeleted: boolean("is_deleted").default(false).notNull(),
+    replyTo: uuid("reply_to"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
@@ -57,7 +57,7 @@ export const messages = pgTable(
 export const messagesRelations = relations(messages, ({ one, many }) => ({
   room: one(rooms, { fields: [messages.roomId], references: [rooms.id] }),
   sender: one(user, { fields: [messages.senderId], references: [user.id] }),
-  replyTo: one(messages, {
+  replyToMessage: one(messages, {
     fields: [messages.replyTo],
     references: [messages.id],
     relationName: "messageReply",
