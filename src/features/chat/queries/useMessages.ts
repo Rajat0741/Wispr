@@ -9,16 +9,21 @@ import { supabase } from "@/lib/supabase/client";
 
 interface MessagesPage {
   messages: MessageWithSender[];
-  nextCursor: string | null;
+  nextCursor: number | null;
 }
 
 async function fetchMessagesPage(
   roomId: string,
-  cursor?: string,
+  cursor?: number,
 ): Promise<MessagesPage> {
-  const { data, error } = await betterFetch<MessagesPage>(
-    `/api/rooms/${roomId}/messages${cursor ? `?cursor=${cursor}` : ""}`,
-  );
+  const params = new URLSearchParams();
+  if (cursor !== undefined) {
+    params.set("cursor", cursor.toString());
+  }
+  const queryString = params.toString();
+  const url = `/api/rooms/${roomId}/messages${queryString ? `?${queryString}` : ""}`;
+
+  const { data, error } = await betterFetch<MessagesPage>(url);
 
   if (error) throw new Error(error.message || `Failed to fetch messages`);
   return data;
@@ -31,8 +36,8 @@ export function useMessages(roomId: string) {
   const query = useInfiniteQuery({
     queryKey,
     queryFn: ({ pageParam }) =>
-      fetchMessagesPage(roomId, pageParam as string | undefined),
-    initialPageParam: undefined as string | undefined,
+      fetchMessagesPage(roomId, pageParam as number | undefined),
+    initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
@@ -98,7 +103,7 @@ export function useMessages(roomId: string) {
   const messages = (query.data?.pages ?? [])
     .slice()
     .reverse()
-    .flatMap((page) => page.messages.slice().reverse())
+    .flatMap((page) => page.messages.slice().reverse());
 
   return {
     messages,

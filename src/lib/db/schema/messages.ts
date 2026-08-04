@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
+  bigserial,
   boolean,
   check,
   index,
@@ -8,6 +9,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -30,6 +32,7 @@ export const messages = pgTable(
   "messages",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    displayOrder: bigserial("display_order", { mode: "number" }).notNull(),
     roomId: uuid("room_id")
       .notNull()
       .references(() => rooms.id, { onDelete: "cascade" }),
@@ -41,9 +44,10 @@ export const messages = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
-    index("messages_room_created_idx").on(
+    index("messages_room_created_idx").on(table.roomId, table.createdAt),
+    uniqueIndex("messages_room_display_order_unique_idx").on(
       table.roomId,
-      table.createdAt,
+      table.displayOrder,
     ),
     check(
       "messages_sender_or_type_check",

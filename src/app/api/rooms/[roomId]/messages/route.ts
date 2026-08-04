@@ -9,7 +9,7 @@ import { AppError } from "@/utils/app-error";
 
 const paramsSchema = z.object({ roomId: z.uuid() });
 const querySchema = z.object({
-  cursor: z.iso.datetime({ offset: true }).optional(),
+  cursor: z.coerce.number().int().positive().optional(),
 });
 
 export async function GET(

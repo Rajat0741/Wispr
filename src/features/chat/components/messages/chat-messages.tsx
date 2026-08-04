@@ -174,7 +174,7 @@ function ChatMessageList() {
                             !isMine &&
                             message.sender?.name && (
                               <MessageHeader className="text-[11px]">
-                                <span className="font-semibold text-foreground/90">
+                                <span className="font-semibold text-foreground">
                                   {message.sender.name}
                                 </span>
                               </MessageHeader>

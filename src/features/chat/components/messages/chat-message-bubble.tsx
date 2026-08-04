@@ -24,7 +24,7 @@ export function ChatMessageBubble({
 
   return (
     <Bubble variant={isMine ? "default" : "muted"}>
-      <BubbleContent className="max-w-2xl gap-2">
+      <BubbleContent className="max-w-2xl px-2">
         {isReply && (
           <ReplyPreview
             message={replyTarget}
@@ -33,16 +33,12 @@ export function ChatMessageBubble({
           />
         )}
 
-        <div className="flex items-end gap-2">
-          <div className="min-w-0 flex-1">
-            <Streamdown className="typeset typeset-docs">
-              {message.content}
-            </Streamdown>
-            <span className="mt-1 block text-right text-[10px] text-muted-foreground/70">
-              {format(new Date(message.createdAt), "h:mm a")}
-            </span>
-          </div>
-        </div>
+        <Streamdown className="typeset typeset-docs">
+          {message.content}
+        </Streamdown>
+            <span className="mt-1 block text-right text-[10px] text-muted-foreground">
+          {format(new Date(message.createdAt), "h:mm a")}
+        </span>
       </BubbleContent>
     </Bubble>
   );

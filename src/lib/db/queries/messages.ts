@@ -17,6 +17,7 @@ const defaultMessageWithRelations = {
     replyToMessage: {
       columns: {
         id: true,
+        displayOrder: true,
         type: true,
         content: true,
         isDeleted: true,
@@ -48,15 +49,9 @@ export const getMessageById = async (roomId: string, messageId: string) =>
     ...defaultMessageWithRelations,
   });
 
-
-/**
- * Cursor-based paginated messages for infinite scroll.
- * Fetches `MESSAGE_PAGE_SIZE` messages *older* than `cursor` (a createdAt ISO string),
- * ordered newest-first. The client reverses each page for chronological display.
- */
 export const getRoomMessagesPaginated = async (
   roomId: string,
-  cursor?: string,
+  cursor?: number,
 ) => {
   const baseWhere = and(
     eq(messages.roomId, roomId),
@@ -64,19 +59,19 @@ export const getRoomMessagesPaginated = async (
   );
 
   const where = cursor
-    ? and(baseWhere, lt(messages.createdAt, new Date(cursor)))
+    ? and(baseWhere, lt(messages.displayOrder, cursor))
     : baseWhere;
 
   const rows = await db.query.messages.findMany({
     where,
-    orderBy: (messages, { desc }) => [desc(messages.createdAt)],
+    orderBy: (messages, { desc }) => [desc(messages.displayOrder)],
     limit: MESSAGE_PAGE_SIZE,
     ...defaultMessageWithRelations,
   });
 
   const nextCursor =
     rows.length === MESSAGE_PAGE_SIZE
-      ? rows[rows.length - 1].createdAt.toISOString()
+      ? rows[rows.length - 1].displayOrder
       : null;
 
   return { messages: rows, nextCursor };

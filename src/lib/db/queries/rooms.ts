@@ -284,7 +284,7 @@ export const getRoomsForUser = async (userId: string) => {
           },
           group: true,
           messages: {
-            orderBy: (messages, { desc }) => [desc(messages.createdAt)],
+            orderBy: (messages, { desc }) => [desc(messages.displayOrder)],
             limit: 1,
           },
         },
