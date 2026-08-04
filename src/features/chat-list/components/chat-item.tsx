@@ -48,7 +48,8 @@ export function ChatItem({
 
   return (
     <CommandItem
-      value={`${name} ${lastMessage ?? ""}`}
+      value={room.roomId}
+      keywords={[name, lastMessage ?? ""]}
       onSelect={onSelect}
       data-active={isActive}
       className={cn(

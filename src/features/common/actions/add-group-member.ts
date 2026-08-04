@@ -3,9 +3,9 @@
 import { z } from "zod";
 import { CHAT_EVENTS } from "@/features/chat/constants";
 import type { MessageWithSender } from "@/features/chat/types";
-import { addGroupMemberTransaction } from "@/lib/db/queries";
+import { addGroupMemberTransaction, getRoomMemberIds } from "@/lib/db/queries";
 import { roomActionClient } from "@/lib/safe-action";
-import { broadcastToRoom } from "@/lib/supabase/server";
+import { broadcastToRoom, broadcastToUsers } from "@/lib/supabase/server";
 import { AppError } from "@/utils/app-error";
 
 const addGroupMemberSchema = z.object({
@@ -47,6 +47,11 @@ export const addGroupMember = roomActionClient
           sender: null,
           replyToMessage: null,
         },
+      );
+      await broadcastToUsers(
+        await getRoomMemberIds(roomId),
+        CHAT_EVENTS.CHAT_LIST_UPDATED,
+        { roomId },
       );
 
       return {

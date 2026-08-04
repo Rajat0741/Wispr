@@ -1,16 +1,19 @@
 "use client";
 
 import { betterFetch } from "@better-fetch/fetch";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  type InfiniteData,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useEffect } from "react";
 import { CHAT_EVENTS } from "@/features/chat/constants";
 import type { MessageWithSender } from "@/features/chat/types";
 import { supabase } from "@/lib/supabase/client";
-
-interface MessagesPage {
-  messages: MessageWithSender[];
-  nextCursor: number | null;
-}
+import {
+  type MessagesPage,
+  updateMessagesCache,
+} from "../utils/updateMessagesCache";
 
 async function fetchMessagesPage(
   roomId: string,
@@ -51,45 +54,9 @@ export function useMessages(roomId: string) {
         ({ payload }: { payload: MessageWithSender }) => {
           if (!payload?.id) return;
 
-          queryClient.setQueryData<typeof query.data>(
+          queryClient.setQueryData<InfiniteData<MessagesPage>>(
             queryKey,
-            (cachedData) => {
-              if (!cachedData?.pages?.length) return cachedData;
-
-              let exists = false;
-
-              const newPages = cachedData.pages.map((page) => {
-                const hasMessage = page.messages.some(
-                  (m) => m.id === payload.id,
-                );
-                if (hasMessage) {
-                  exists = true;
-                  return {
-                    ...page,
-                    messages: page.messages.map((m) =>
-                      m.id === payload.id ? payload : m,
-                    ),
-                  };
-                }
-                return page;
-              });
-
-              if (exists) {
-                return { ...cachedData, pages: newPages };
-              }
-
-              const firstPage = cachedData.pages[0];
-              return {
-                ...cachedData,
-                pages: [
-                  {
-                    ...firstPage,
-                    messages: [payload, ...firstPage.messages],
-                  },
-                  ...cachedData.pages.slice(1),
-                ],
-              };
-            },
+            (cachedData) => updateMessagesCache(cachedData, payload),
           );
         },
       )

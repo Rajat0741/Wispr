@@ -1,8 +1,10 @@
 "use server";
 
 import { z } from "zod";
-import { deleteGroupRoom, deleteRoom, getRoomById } from "@/lib/db/queries";
+import { CHAT_EVENTS } from "@/features/chat/constants";
+import { deleteRoom, getRoomById, getRoomMemberIds } from "@/lib/db/queries";
 import { roomActionClient } from "@/lib/safe-action";
+import { broadcastToUsers } from "@/lib/supabase/server";
 import { AppError } from "@/utils/app-error";
 
 const deleteChatSchema = z.object({
@@ -22,10 +24,11 @@ export const deleteChat = roomActionClient
       throw new AppError("Unauthorized access", 401);
     }
 
-    if (room.roomType === "dm") {
-      await deleteRoom(roomId);
-      return;
-    }
+    const memberIds = await getRoomMemberIds(roomId);
 
-    await deleteGroupRoom(roomId);
+    await deleteRoom(roomId);
+
+    await broadcastToUsers(memberIds, CHAT_EVENTS.CHAT_LIST_UPDATED, {
+      roomId,
+    });
   });

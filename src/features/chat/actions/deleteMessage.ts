@@ -20,7 +20,10 @@ export const deleteMessage = roomActionClient
   .inputSchema(deleteMessageSchema)
   .action(
     async ({
-      ctx: { user, roomData: { roomMember } },
+      ctx: {
+        user,
+        roomData: { roomMember },
+      },
       parsedInput: { roomId, messageId },
     }) => {
       const existingMessage = await getMessageById(roomId, messageId);
@@ -32,10 +35,7 @@ export const deleteMessage = roomActionClient
       const isAdmin = roomMember.role === "admin";
 
       if (!isSender && !isAdmin) {
-        throw new AppError(
-          "Unauthorized Access",
-          403,
-        );
+        throw new AppError("Unauthorized Access", 403);
       }
 
       await deleteMessageInRoom(roomId, messageId);

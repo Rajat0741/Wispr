@@ -178,10 +178,6 @@ export const deleteRoom = async (roomId: string) => {
   await db.delete(rooms).where(eq(rooms.id, roomId));
 };
 
-export const deleteGroupRoom = async (roomId: string) => {
-  await db.delete(rooms).where(eq(rooms.id, roomId));
-};
-
 export const leaveGroupTransaction = async (
   roomId: string,
   userId: string,
@@ -291,6 +287,15 @@ export const getRoomsForUser = async (userId: string) => {
       },
     },
   });
+};
+
+export const getRoomMemberIds = async (roomId: string) => {
+  const members = await db
+    .select({ userId: roomMembers.userId })
+    .from(roomMembers)
+    .where(eq(roomMembers.roomId, roomId));
+
+  return members.map(({ userId }) => userId);
 };
 
 export const checkUserMembershipInRoom = async (

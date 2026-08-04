@@ -1,8 +1,10 @@
 "use server";
 
 import { z } from "zod";
-import { createGroupTransaction } from "@/lib/db/queries";
+import { CHAT_EVENTS } from "@/features/chat/constants";
+import { createGroupTransaction, getRoomMemberIds } from "@/lib/db/queries";
 import { authActionClient } from "@/lib/safe-action";
+import { broadcastToUsers } from "@/lib/supabase/server";
 import { AppError } from "@/utils/app-error";
 
 const createGroupSchema = z.object({
@@ -21,7 +23,10 @@ export const createGroup = authActionClient
     );
 
     if (uniqueMemberIds.length === 0) {
-      throw new AppError("Please select at least one member for the group.", 400);
+      throw new AppError(
+        "Please select at least one member for the group.",
+        400,
+      );
     }
 
     try {
@@ -30,6 +35,12 @@ export const createGroup = authActionClient
         creatorId: user.id,
         memberIds: uniqueMemberIds,
       });
+
+      await broadcastToUsers(
+        await getRoomMemberIds(room.id),
+        CHAT_EVENTS.CHAT_LIST_UPDATED,
+        { roomId: room.id },
+      );
 
       return { roomId: room.id };
     } catch (err) {

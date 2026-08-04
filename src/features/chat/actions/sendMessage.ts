@@ -2,11 +2,15 @@
 
 import z from "zod";
 import { CHAT_EVENTS } from "@/features/chat/constants";
-import type { MessageUpdatePayload, MessageWithSender } from "@/features/chat/types";
-import { createMessage, getMessageById } from "@/lib/db/queries";
+import type { MessageWithSender } from "@/features/chat/types";
+import {
+  createMessage,
+  getMessageById,
+  getRoomMemberIds,
+} from "@/lib/db/queries";
 import { messageTypeSchema } from "@/lib/db/schema";
 import { roomActionClient } from "@/lib/safe-action";
-import { broadcastToRoom } from "@/lib/supabase/server";
+import { broadcastToRoom, broadcastToUsers } from "@/lib/supabase/server";
 import { AppError } from "@/utils/app-error";
 
 const sendMessageSchema = z.object({
@@ -27,7 +31,6 @@ export const sendMessage = roomActionClient
       ctx: { user },
       parsedInput: { message, roomId, type, replyTo },
     }) => {
-
       const replyToMessage = replyTo
         ? await getMessageById(roomId, replyTo)
         : undefined;
@@ -62,8 +65,12 @@ export const sendMessage = roomActionClient
         CHAT_EVENTS.MESSAGE_UPDATES,
         messageWithSender,
       );
+      await broadcastToUsers(
+        await getRoomMemberIds(roomId),
+        CHAT_EVENTS.CHAT_LIST_UPDATED,
+        { roomId },
+      );
 
       return messageWithSender;
     },
   );
-

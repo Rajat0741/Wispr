@@ -3,9 +3,9 @@
 import { z } from "zod";
 import { CHAT_EVENTS } from "@/features/chat/constants";
 import type { MessageWithSender } from "@/features/chat/types";
-import { leaveGroupTransaction } from "@/lib/db/queries";
+import { getRoomMemberIds, leaveGroupTransaction } from "@/lib/db/queries";
 import { roomActionClient } from "@/lib/safe-action";
-import { broadcastToRoom } from "@/lib/supabase/server";
+import { broadcastToRoom, broadcastToUsers } from "@/lib/supabase/server";
 
 const leaveGroupSchema = z.object({
   roomId: z.uuid(),
@@ -14,6 +14,7 @@ const leaveGroupSchema = z.object({
 export const leaveGroup = roomActionClient
   .inputSchema(leaveGroupSchema)
   .action(async ({ parsedInput: { roomId }, ctx: { user } }) => {
+    const memberIds = await getRoomMemberIds(roomId);
     const message = await leaveGroupTransaction(
       roomId,
       user.id,
@@ -29,4 +30,7 @@ export const leaveGroup = roomActionClient
         replyToMessage: null,
       },
     );
+    await broadcastToUsers(memberIds, CHAT_EVENTS.CHAT_LIST_UPDATED, {
+      roomId,
+    });
   });

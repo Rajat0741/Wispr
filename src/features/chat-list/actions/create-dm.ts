@@ -1,8 +1,14 @@
 "use server";
 
 import { z } from "zod";
-import { createDmTransaction, getUserById } from "@/lib/db/queries";
+import { CHAT_EVENTS } from "@/features/chat/constants";
+import {
+  createDmTransaction,
+  getRoomMemberIds,
+  getUserById,
+} from "@/lib/db/queries";
 import { authActionClient } from "@/lib/safe-action";
+import { broadcastToUsers } from "@/lib/supabase/server";
 import { AppError } from "@/utils/app-error";
 import { getDmKey } from "@/utils/get-dm-key";
 
@@ -30,6 +36,12 @@ export const createDm = authActionClient
         user2Id: targetUser.id,
         dmKey,
       });
+
+      await broadcastToUsers(
+        await getRoomMemberIds(roomId),
+        CHAT_EVENTS.CHAT_LIST_UPDATED,
+        { roomId },
+      );
 
       return { roomId };
     } catch (err) {
