@@ -1,3 +1,6 @@
+import "server-only";
+import { REALTIME_TOPICS } from "@/features/chat/constants";
+
 async function broadcastToTopics<T>(
   topics: string[],
   event: string,
@@ -7,42 +10,46 @@ async function broadcastToTopics<T>(
   if (uniqueTopics.length === 0) return;
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const apiKey =
-    process.env.SUPABASE_SECRET_KEY || process.env.NEXT_PUBLIC_PUBLISHABLE_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SECRET_KEY;
 
-  if (!supabaseUrl || !apiKey) {
-    console.warn(
-      "Supabase URL or API key missing. Realtime broadcast skipped.",
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error(
+      "Supabase URL or service role key is missing. Realtime broadcast aborted.",
     );
-    return;
   }
 
   try {
     const res = await fetch(`${supabaseUrl}/realtime/v1/api/broadcast`, {
       method: "POST",
       headers: {
-        apikey: apiKey,
-        Authorization: `Bearer ${apiKey}`,
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        messages: uniqueTopics.map((topic) => ({ topic, event, payload })),
+        messages: uniqueTopics.map((topic) => ({
+          topic,
+          event,
+          payload,
+          private: true,
+        })),
       }),
     });
 
     if (!res.ok) {
-      console.error(
-        `Failed to broadcast realtime event to ${uniqueTopics.join(", ")}`,
-        await res.text(),
+      const responseText = await res.text();
+      throw new Error(
+        `Failed to broadcast realtime event to ${uniqueTopics.join(", ")}: ${responseText}`,
       );
     }
   } catch (error) {
     console.error("Failed to trigger realtime broadcast:", error);
+    throw error;
   }
 }
 
 export function broadcastToRoom<T>(roomId: string, event: string, payload: T) {
-  return broadcastToTopics([`room:${roomId}`], event, payload);
+  return broadcastToTopics([REALTIME_TOPICS.room(roomId)], event, payload);
 }
 
 export function broadcastToUsers<T>(
@@ -51,7 +58,7 @@ export function broadcastToUsers<T>(
   payload: T,
 ) {
   return broadcastToTopics(
-    userIds.map((userId) => `chat-list:${userId}`),
+    userIds.map(REALTIME_TOPICS.chatList),
     event,
     payload,
   );

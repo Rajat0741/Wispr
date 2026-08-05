@@ -10,13 +10,14 @@ import {
   CommandInput,
   CommandList,
 } from "@/components/ui/command";
-import { CHAT_EVENTS } from "@/features/chat/constants";
+import { CHAT_EVENTS, REALTIME_TOPICS } from "@/features/chat/constants";
 import { ChatHeader } from "@/features/chat-list/components/chat-header";
 import { ChatItem } from "@/features/chat-list/components/chat-item";
 import {
   CHAT_ROOMS_KEY,
   useChatRoomsQuery,
 } from "@/features/chat-list/queries/get-chat-rooms";
+import { useRealtimeToken } from "@/hooks/use-realtime-token";
 import { authClient } from "@/lib/auth-client";
 import { supabase } from "@/lib/supabase/client";
 
@@ -26,21 +27,40 @@ export function ChatList() {
   const { data: session } = authClient.useSession();
   const { rooms, isPending, isError } = useChatRoomsQuery();
   const userId = session?.user?.id;
+  const realtimeToken = useRealtimeToken(Boolean(userId));
 
   useEffect(() => {
     if (!userId) return;
+    const chatListTopic = REALTIME_TOPICS.chatList(userId);
 
-    const channel = supabase
-      .channel(`chat-list:${userId}`)
-      .on("broadcast", { event: CHAT_EVENTS.CHAT_LIST_UPDATED }, () => {
-        void queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_KEY });
-      })
-      .subscribe();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    async function initChannel() {
+      if (!realtimeToken.isSuccess) return;
+
+      channel = supabase.channel(chatListTopic, {
+        config: { private: true },
+      });
+
+      channel
+        .on("broadcast", { event: CHAT_EVENTS.CHAT_LIST_UPDATED }, () => {
+          void queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_KEY });
+        })
+        .subscribe((status, err) => {
+          if (status === "CHANNEL_ERROR") {
+            console.error("Access denied to private chat-list channel:", err);
+          }
+        });
+    }
+
+    void initChannel();
 
     return () => {
-      void supabase.removeChannel(channel);
+      if (channel) {
+        void supabase.removeChannel(channel);
+      }
     };
-  }, [queryClient, userId]);
+  }, [queryClient, realtimeToken.isSuccess, userId]);
 
   return (
     <Command className="max-w-full h-screen overflow-y-auto border-r rounded-none border-r-border bg-background">

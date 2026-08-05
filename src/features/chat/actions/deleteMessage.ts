@@ -6,9 +6,10 @@ import type { MessageWithSender } from "@/features/chat/types";
 import {
   deleteMessageInRoom,
   getMessageById,
+  getRoomMemberIds,
 } from "@/lib/db/queries";
 import { roomActionClient } from "@/lib/safe-action";
-import { broadcastToRoom } from "@/lib/supabase/server";
+import { broadcastToRoom, broadcastToUsers } from "@/lib/supabase/server";
 import { AppError } from "@/utils/app-error";
 
 const deleteMessageSchema = z.object({
@@ -48,6 +49,11 @@ export const deleteMessage = roomActionClient
           updatedMessage,
         );
       }
+      await broadcastToUsers(
+        await getRoomMemberIds(roomId),
+        CHAT_EVENTS.CHAT_LIST_UPDATED,
+        { roomId },
+      );
 
       return { messageId };
     },

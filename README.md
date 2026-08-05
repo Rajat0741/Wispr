@@ -28,6 +28,7 @@ DIRECT_DB_URL=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
+SUPABASE_JWT_SECRET=
 
 # Better Auth Configuration
 BETTER_AUTH_SECRET=
@@ -38,7 +39,7 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 ```
 
-Sync the database and start the development server:
+Sync the application database and start the development server:
 
 ```bash
 pnpm db:push

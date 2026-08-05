@@ -7,8 +7,9 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { CHAT_EVENTS } from "@/features/chat/constants";
+import { CHAT_EVENTS, REALTIME_TOPICS } from "@/features/chat/constants";
 import type { MessageWithSender } from "@/features/chat/types";
+import { useRealtimeToken } from "@/hooks/use-realtime-token";
 import { supabase } from "@/lib/supabase/client";
 import {
   type MessagesPage,
@@ -35,6 +36,7 @@ async function fetchMessagesPage(
 export function useMessages(roomId: string) {
   const queryClient = useQueryClient();
   const queryKey = ["messages", roomId] as const;
+  const realtimeToken = useRealtimeToken();
 
   const query = useInfiniteQuery({
     queryKey,
@@ -45,27 +47,43 @@ export function useMessages(roomId: string) {
   });
 
   useEffect(() => {
-    const channel = supabase.channel(`room:${roomId}`);
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    channel
-      .on(
-        "broadcast",
-        { event: CHAT_EVENTS.MESSAGE_UPDATES },
-        ({ payload }: { payload: MessageWithSender }) => {
-          if (!payload?.id) return;
+    async function initChannel() {
+      if (!realtimeToken.isSuccess) return;
 
-          queryClient.setQueryData<InfiniteData<MessagesPage>>(
-            queryKey,
-            (cachedData) => updateMessagesCache(cachedData, payload),
-          );
-        },
-      )
-      .subscribe();
+      channel = supabase.channel(REALTIME_TOPICS.room(roomId), {
+        config: { private: true },
+      });
+
+      channel
+        .on(
+          "broadcast",
+          { event: CHAT_EVENTS.MESSAGE_UPDATES },
+          ({ payload }: { payload: MessageWithSender }) => {
+            if (!payload?.id) return;
+
+            queryClient.setQueryData<InfiniteData<MessagesPage>>(
+              queryKey,
+              (cachedData) => updateMessagesCache(cachedData, payload),
+            );
+          },
+        )
+        .subscribe((status, err) => {
+          if (status === "CHANNEL_ERROR") {
+            console.error("Access denied to private room channel:", err);
+          }
+        });
+    }
+
+    void initChannel();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        void supabase.removeChannel(channel);
+      }
     };
-  }, [roomId, queryClient, queryKey]);
+  }, [roomId, queryClient, queryKey, realtimeToken.isSuccess]);
 
   const messages = (query.data?.pages ?? [])
     .slice()
