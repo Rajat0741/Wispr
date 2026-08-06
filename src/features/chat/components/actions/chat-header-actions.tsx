@@ -2,9 +2,9 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  EllipsisVertical,
   InfoIcon,
   LogOutIcon,
-  MoreHorizontalIcon,
   UserPlusIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -19,17 +19,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/toast";
-import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
 import { useChatStore } from "@/features/chat/components/layout/chat-provider";
+import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
 import { leaveGroup } from "@/features/common/actions/leave-group";
 import { useConfirm } from "@/lib/providers/confirm-dialog-provider";
 import { AddGroupMemberDialog } from "../dialogs/add-group-member-dialog";
 
 interface ChatHeaderActionsProps {
   onOpenInfo?: () => void;
+  className?: string;
 }
 
-export function ChatHeaderActions({ onOpenInfo }: ChatHeaderActionsProps) {
+export function ChatHeaderActions({
+  onOpenInfo,
+  className,
+}: ChatHeaderActionsProps) {
   const roomId = useChatStore((s) => s.roomId);
   const roomType = useChatStore((s) => s.roomType);
   const members = useChatStore((s) => s.members);
@@ -68,10 +72,10 @@ export function ChatHeaderActions({ onOpenInfo }: ChatHeaderActionsProps) {
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button variant="ghost" size="icon" aria-label="Room actions" />
+            <Button variant="ghost" size="icon" aria-label="Room actions" className={className} />
           }
         >
-          <MoreHorizontalIcon />
+          <EllipsisVertical />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" side="bottom">
           <DropdownMenuItem onClick={onOpenInfo}>

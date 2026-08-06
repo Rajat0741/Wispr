@@ -2,7 +2,6 @@
 
 import {
   MessageCircleIcon,
-  RadioIcon,
   UserCircleIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -22,7 +21,6 @@ import {
 
 const navigation = [
   { title: "Chat", href: "/chat", icon: MdMessage },
-  { title: "Global Chat", href: "/global", icon: RadioIcon },
   { title: "Profile", href: "/profile", icon: UserCircleIcon },
 ];
 

@@ -24,6 +24,23 @@ async function fetchRealtimeToken(): Promise<RealtimeTokenResponse> {
   return data;
 }
 
+/**
+ * Fetches a short-lived JWT for Supabase Realtime private channels and
+ * automatically sets it on the Realtime client via `setSupabaseRealtimeAuthToken`.
+ *
+ * Private channels reject expired tokens, so this hook manages the full token
+ * lifecycle — fetch, cache (9 min staleTime), and refresh 60s before expiry.
+ *
+ * Uses a fixed query key, making this a singleton: all consumers across the app
+ * share one token and refresh cycle.
+ *
+ * @param enabled - Pass `false` to skip fetching (e.g. `Boolean(userId)`).
+ *                  Defaults to `true`.
+ *
+ * @returns The TanStack Query result. Consumers should gate channel setup on
+ *          `.isSuccess` — the token is already pushed to the Supabase client
+ *          internally, so no manual token handling is needed.
+ */
 export function useRealtimeToken(enabled = true) {
   const query = useQuery({
     queryKey: REALTIME_TOKEN_QUERY_KEY,
