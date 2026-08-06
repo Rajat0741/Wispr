@@ -71,18 +71,18 @@ export function ChatInput() {
             onChange={(event) => setInputValue(event.target.value)}
             maxLength={10000}
             disabled={isPending}
-            className="min-h-0 max-h-32 flex-1 resize-none border-0 bg-transparent px-2 py-2 leading-6 focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="min-h-0 max-h-32 flex-1 resize-none border-0 bg-transparent px-2 leading-6 focus-visible:ring-0 focus-visible:ring-offset-0"
             onKeyDown={handleKeyDown}
           />
 
           <Button
             type="submit"
-            size="icon"
+            size="icon-lg"
             disabled={!inputValue.trim() || isPending}
             aria-label="Send message"
-            className="size-10 shrink-0 rounded-full hover:bg-muted"
+            className="size-10 shrink-0 rounded-full bg-green-600 hover:bg-green-700"
           >
-            <SendIcon className="size-5" />
+            <SendIcon />
           </Button>
         </div>
       </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -32,17 +31,13 @@ export function ReplyPreview({
   const senderName = isDeleted
     ? "User"
     : (message.sender?.name ?? "Unknown sender");
-  const formattedTime =
-    !isDeleted && message?.createdAt
-      ? format(new Date(message.createdAt), "h:mm a")
-      : null;
 
   const ContentWrapper = onClick ? "button" : "div";
 
   return (
     <div
       className={cn(
-        "flex items-center gap-2 border-l-2 border-primary bg-muted/30 px-2.5 py-1.5 text-left rounded-r-md",
+        "flex items-center rounded-md gap-2 border-border border-2 border-l-5 border-l-purple-400 bg-muted/30 px-2.5 py-1.5 text-left shadow-xs",
         className,
       )}
     >
@@ -55,16 +50,11 @@ export function ReplyPreview({
         </p>
         <p
           className={cn(
-            "truncate text-xs",
+            "truncate text-sm",
             isDeleted ? "italic text-muted-foreground/70" : "text-muted-foreground",
           )}
         >
           {isDeleted ? "Deleted Message" : message.content}
-          {formattedTime && (
-            <span className="ml-1 text-[10px] opacity-70 not-italic">
-              · {formattedTime}
-            </span>
-          )}
         </p>
       </ContentWrapper>
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
+import { Logo } from "@/components/logo";
 import {
   Card,
   CardContent,
@@ -33,7 +34,8 @@ export function LoginCard() {
 
   return (
     <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
+      <CardHeader className="text-center flex flex-col items-center">
+        <Logo size="md" className="mb-2" />
         <CardTitle className="text-2xl">Join Convo</CardTitle>
         <CardDescription>
           Sign in to continue to your conversations

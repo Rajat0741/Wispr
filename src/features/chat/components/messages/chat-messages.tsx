@@ -154,7 +154,7 @@ function ChatMessageList() {
                       messageId={message.id}
                       scrollAnchor={isMine && message.id === lastMessageId}
                       className={cn(
-                        "rounded-lg transition-colors",
+                        "transition-colors",
                         highlightedMessageId === message.id &&
                           "bg-primary/10 ring-2 ring-primary/40",
                       )}
@@ -173,7 +173,7 @@ function ChatMessageList() {
                           {roomType === "group" &&
                             !isMine &&
                             message.sender?.name && (
-                              <MessageHeader className="text-[11px]">
+                              <MessageHeader className="text-xs">
                                 <span className="font-semibold text-foreground">
                                   {message.sender.name}
                                 </span>

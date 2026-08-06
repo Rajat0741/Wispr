@@ -24,7 +24,7 @@ export function ChatMessageBubble({
 
   return (
     <Bubble variant={isMine ? "default" : "muted"}>
-      <BubbleContent className="max-w-2xl px-2">
+      <BubbleContent className="max-w-2xl px-2 rounded-md">
         {isReply && (
           <ReplyPreview
             message={replyTarget}

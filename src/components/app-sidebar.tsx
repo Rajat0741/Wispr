@@ -1,13 +1,11 @@
 "use client";
 
-import {
-  MessageCircleIcon,
-  UserCircleIcon,
-} from "lucide-react";
+import { UserCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type * as React from "react";
 import { MdMessage } from "react-icons/md";
+import { Logo } from "@/components/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -35,12 +33,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton
               size="lg"
               className="md:h-9 md:p-0"
-              tooltip={{ children: "Chats", hidden: false }}
+              tooltip={{ children: "Convo", hidden: false }}
             >
-              <div className="flex aspect-square size-9 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
-                <MessageCircleIcon className="size-5" />
-              </div>
-              <span className="truncate text-sm font-semibold">Chats</span>
+              <Logo size="md" className="bg-sidebar-primary text-sidebar-primary-foreground shadow-none hover:scale-100" />
+              <span className="truncate text-sm font-semibold">Convo</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

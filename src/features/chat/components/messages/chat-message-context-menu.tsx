@@ -82,7 +82,7 @@ export function ChatMessageContextMenu({
   return (
     <ContextMenu>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>
-      <ContextMenuContent>
+      <ContextMenuContent className="border border-border">
         <ContextMenuItem onClick={handleCopy}>
           <CopyIcon />
           Copy

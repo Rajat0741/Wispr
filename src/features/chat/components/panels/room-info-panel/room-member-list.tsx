@@ -31,7 +31,7 @@ function MemberItem({ member, isMe }: MemberItemProps) {
   return (
     <CommandItem
       value={member.name ?? member.id}
-      className="py-1.5 px-2 rounded-lg mb-1"
+      className="py-1.5 px-2 mb-1"
     >
       <ItemMedia variant="image" className="mr-3">
         <UserAvatar
@@ -82,7 +82,7 @@ export function RoomMemberList({
       </div>
 
       <Command
-        className="rounded-xl border border-border/50 bg-transparent"
+        className="border border-border/50 bg-transparent"
         shouldFilter
       >
         <CommandInput placeholder="Search members…" />

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 
 export default async function Home() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -10,7 +11,8 @@ export default async function Home() {
   return (
     <main className="flex h-full flex-col items-center justify-center px-4 text-center">
       <div className="mx-auto max-w-2xl space-y-8">
-        <div className="space-y-4">
+        <div className="space-y-4 flex flex-col items-center">
+          <Logo size="lg" className="mb-4" />
           <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">
             Conversations <br />
             <span>made human.</span>
