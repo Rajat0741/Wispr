@@ -1,14 +1,18 @@
 "use client";
 
+import { Logo } from "@/components/logo";
 import { UserMenu } from "@/components/user-menu";
 import { NewChat } from "@/features/chat-list/components/dialogs/new-chat-dialog";
 
-export function ChatHeader({ title = "Chats" }: { title?: string }) {
+export function ChatHeader({ title = "Convo" }: { title?: string }) {
   return (
     <div className="flex items-center justify-between px-3 py-2">
-      <h1 className="text-xl tracking-tight px-1">
-        {title}
-      </h1>
+      <div className="flex items-center gap-2">
+        <Logo size="md" className="md:hidden" />
+        <h1 className="text-xl tracking-tight px-1">
+          {title}
+        </h1>
+      </div>
       <div className="flex items-center gap-3">
         <NewChat />
         <UserMenu />

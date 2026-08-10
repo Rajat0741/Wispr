@@ -12,6 +12,7 @@ export const searchUsersByUsername = async (
       username: user.username,
       name: user.name,
       image: user.image,
+      bio: user.bio,
     })
     .from(user)
     .where(ilike(user.username, `%${query}%`))
@@ -26,6 +27,7 @@ export const getUserById = async (id: string) => {
       username: user.username,
       name: user.name,
       image: user.image,
+      bio: user.bio,
     })
     .from(user)
     .where(eq(user.id, id))

@@ -308,3 +308,16 @@ export const checkUserMembershipInRoom = async (
 
   return roomMember;
 };
+
+export const updateGroupDescriptionQuery = async (
+  roomId: string,
+  description: string,
+) => {
+  const [updatedGroup] = await db
+    .update(groups)
+    .set({ description })
+    .where(eq(groups.roomId, roomId))
+    .returning();
+
+  return updatedGroup ?? null;
+};

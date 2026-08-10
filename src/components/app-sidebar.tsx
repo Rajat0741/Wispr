@@ -11,7 +11,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -27,24 +26,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              className="md:h-9 md:p-0"
-              tooltip={{ children: "Convo", hidden: false }}
-            >
-              <Logo size="md" className="bg-sidebar-primary text-sidebar-primary-foreground shadow-none hover:scale-100" />
-              <span className="truncate text-sm font-semibold">Convo</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent className="px-1.5 md:px-0">
             <SidebarMenu>
+              <SidebarMenuItem className="flex justify-center">
+                <SidebarMenuButton
+                  render={<Link href="/" />}
+                  tooltip={{ children: "Convo", hidden: false }}
+                  isActive={pathname === "/"}
+                  className="flex justify-center mb-1"
+                >
+                  <Logo size="md" />
+                  <span className="text-sm font-medium hidden">
+                    Convo
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               {navigation.map((item) => {
                 const Icon = item.icon;
 

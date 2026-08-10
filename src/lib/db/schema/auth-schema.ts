@@ -18,6 +18,7 @@ export const user = pgTable("user", {
     .notNull(),
   username: text("username").unique(),
   displayUsername: text("display_username"),
+  bio: text("bio"),
 });
 
 export const session = pgTable(

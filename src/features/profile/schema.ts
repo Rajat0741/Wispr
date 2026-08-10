@@ -14,3 +14,12 @@ export const usernameSchema = z
 export const updateUsernameSchema = z.object({
   username: usernameSchema,
 });
+
+export const bioSchema = z
+  .string()
+  .trim()
+  .max(200, "Bio cannot exceed 200 characters.");
+
+export const updateBioSchema = z.object({
+  bio: bioSchema,
+});

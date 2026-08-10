@@ -1,8 +1,9 @@
 "use client";
 
-import { LogOut, Trash2 } from "lucide-react";
+import { FileText, LogOut, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -18,11 +19,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { EditGroupDescriptionDialog } from "@/features/chat/components/dialogs/edit-group-description-dialog";
 import { useChatStore } from "@/features/chat/components/layout/chat-provider";
 import { deleteChat } from "@/features/common/actions/delete-chat";
 import { leaveGroup } from "@/features/common/actions/leave-group";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useConfirm } from "@/lib/providers/confirm-dialog-provider";
+import { cn } from "@/lib/utils";
 import { RoomInfoHeader } from "./room-info-header";
 import { RoomMemberList } from "./room-member-list";
 
@@ -45,6 +48,9 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
   const router = useRouter();
   const confirm = useConfirm();
 
+  const [editDescriptionOpen, setEditDescriptionOpen] = useState(false);
+
+  const otherUser = members.find((m) => m.id !== currentUserId) ?? members[0];
   const currentUserRole = members.find((m) => m.id === currentUserId)?.role;
   const isAdmin = currentUserRole === "admin";
 
@@ -53,15 +59,21 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
     router.push("/chat");
   };
 
-  const { executeAsync: executeDeleteAsync } = useAction(deleteChat, { onSuccess });
-  const { executeAsync: executeLeaveAsync } = useAction(leaveGroup, { onSuccess });
+  const { executeAsync: executeDeleteAsync } = useAction(deleteChat, {
+    onSuccess,
+  });
+  const { executeAsync: executeLeaveAsync } = useAction(leaveGroup, {
+    onSuccess,
+  });
 
   const handleLeave = () =>
     confirm({
       title: "Leave group?",
       description: "You will no longer have access to this group's messages.",
       confirmLabel: "Leave group",
-      onConfirm: async () => { await executeLeaveAsync({ roomId }); },
+      onConfirm: async () => {
+        await executeLeaveAsync({ roomId });
+      },
     });
 
   const handleDelete = () =>
@@ -71,7 +83,9 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
         ? "This will permanently delete the group and all its messages for everyone."
         : "This will permanently delete messages for both participants.",
       confirmLabel: isGroup ? "Delete group" : "Delete",
-      onConfirm: async () => { await executeDeleteAsync({ roomId }); },
+      onConfirm: async () => {
+        await executeDeleteAsync({ roomId });
+      },
     });
 
   const content = (
@@ -79,8 +93,55 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
       <RoomInfoHeader
         title={title}
         image={image}
-        description={group?.description}
+        subtitle={
+          isGroup ? null : otherUser?.username ? `@${otherUser.username}` : null
+        }
       />
+
+      {!isGroup && (
+        <div className="flex flex-col gap-1.5 rounded-2xl bg-muted/40 p-3.5 border border-border/40">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <FileText className="size-3.5" />
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              Bio
+            </span>
+          </div>
+          <p className="text-sm text-foreground wrap-break-word line-clamp-4 min-w-0 w-full">
+            {otherUser?.bio && otherUser.bio.trim().length > 0
+              ? otherUser.bio
+              : "No bio added yet"}
+          </p>
+        </div>
+      )}
+
+      {isGroup && (
+        <div className="flex flex-col gap-1.5 rounded-2xl bg-muted/40 p-3.5 border border-border/40">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <FileText className="size-3.5" />
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                Group Description
+              </span>
+            </div>
+            {isAdmin && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-6 text-muted-foreground hover:text-foreground"
+                onClick={() => setEditDescriptionOpen(true)}
+              >
+                <Pencil className="size-3.5" />
+              </Button>
+            )}
+          </div>
+          <p className="text-sm text-foreground wrap-break-word line-clamp-4 min-w-0 w-full">
+            {group?.description?.trim()
+              ? group.description
+              : "No description set"}
+          </p>
+        </div>
+      )}
 
       {isGroup && members.length > 0 && (
         <RoomMemberList members={members} currentUserId={currentUserId} />
@@ -152,6 +213,18 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
             {content}
           </SheetContent>
         </Sheet>
+      )}
+
+      {isGroup && isAdmin && (
+        <EditGroupDescriptionDialog
+          roomId={roomId}
+          currentDescription={group?.description}
+          open={editDescriptionOpen}
+          onOpenChange={setEditDescriptionOpen}
+          onSuccess={() => {
+            router.refresh();
+          }}
+        />
       )}
     </>
   );

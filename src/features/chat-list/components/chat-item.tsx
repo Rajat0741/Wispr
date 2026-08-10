@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDistanceToNowStrict } from "date-fns";
+import { PinIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { CommandItem } from "@/components/ui/command";
@@ -75,22 +76,27 @@ export function ChatItem({
             </span>
           </ItemHeader>
           <ItemDescription>
-            <div className="flex justify-between">
-              <p className="text-xs truncate w-full">
+            <div className="flex items-center justify-between gap-1.5 min-w-0">
+              <p className="text-xs truncate min-w-0 flex-1">
                 {room.lastMessage ?? "No messages yet"}
               </p>
-              <ChatItemActions
-                roomId={room.roomId}
-                roomName={room.name}
-                isGroup={room.roomType === "group"}
-                isPinned={room.isPinned}
-                isActive={isActive}
-                className={cn(
-                  "md:group-hover/item:opacity-100",
-                  isHighlighted && "opacity-100 md:opacity-100",
+              <div className="flex items-center gap-1 shrink-0 ml-auto">
+                {room.isPinned && (
+                  <PinIcon className="size-3.5 text-muted-foreground shrink-0 rotate-45" />
                 )}
-                onOpenChange={setActionsOpen}
-              />
+                <ChatItemActions
+                  roomId={room.roomId}
+                  roomName={room.name}
+                  isGroup={room.roomType === "group"}
+                  isPinned={room.isPinned}
+                  isActive={isActive}
+                  className={cn(
+                    "md:group-hover/item:opacity-100",
+                    isHighlighted && "opacity-100 md:opacity-100",
+                  )}
+                  onOpenChange={setActionsOpen}
+                />
+              </div>
             </div>
           </ItemDescription>
         </ItemContent>

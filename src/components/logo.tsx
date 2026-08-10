@@ -1,5 +1,5 @@
 import type * as React from "react";
-import { RiWechatChannelsLine } from "react-icons/ri";
+import { SiLivechat } from "react-icons/si";
 import { cn } from "@/lib/utils";
 
 interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -23,13 +23,13 @@ export function Logo({ className, iconClassName, size = "md", ...props }: LogoPr
   return (
     <div
       className={cn(
-        "flex aspect-square items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-transform hover:scale-105",
+        "flex aspect-square items-center justify-center rounded-xl bg-emerald-700 text-white shadow-sm transition-transform hover:scale-105",
         sizeClasses[size],
         className
       )}
       {...props}
     >
-      <RiWechatChannelsLine className={cn(iconSizes[size], iconClassName)} />
+      <SiLivechat className={cn(iconSizes[size], iconClassName)} />
     </div>
   );
 }

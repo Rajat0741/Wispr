@@ -6,7 +6,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider open={false}>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="overflow-y-auto">
         {children}
       </SidebarInset>
     </SidebarProvider>

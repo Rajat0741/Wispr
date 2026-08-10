@@ -3,6 +3,7 @@
 import {
   ArrowLeftIcon,
   AtSignIcon,
+  FileTextIcon,
   type LucideIcon,
   MailIcon,
   ShieldCheckIcon,
@@ -16,6 +17,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/toast";
 import { UserAvatar } from "@/features/common/components/user-avatar";
+import { ChangeBioDialog } from "@/features/profile/components/change-bio-dialog";
 import { ChangeUsernameDialog } from "@/features/profile/components/change-username-dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -24,6 +26,7 @@ interface ProfilePageProps {
     name: string;
     image?: string | null;
     username?: string | null;
+    bio?: string | null;
     email: string;
     emailVerified: boolean;
     createdAt: string;
@@ -37,6 +40,14 @@ export function ProfilePage({ user }: ProfilePageProps) {
   const handleUsernameUpdated = () => {
     toast.add({
       title: "Username updated",
+      type: "success",
+    });
+    router.refresh();
+  };
+
+  const handleBioUpdated = () => {
+    toast.add({
+      title: "Bio updated",
       type: "success",
     });
     router.refresh();
@@ -116,6 +127,24 @@ export function ProfilePage({ user }: ProfilePageProps) {
             <ChangeUsernameDialog
               currentUsername={user.username}
               onUsernameUpdated={handleUsernameUpdated}
+            />
+          </div>
+
+          <Separator />
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <ProfileDetail icon={FileTextIcon} label="Bio">
+              {user.bio && user.bio.trim().length > 0 ? (
+                <p className="wrap-break-word line-clamp-4 min-w-0 max-w-xl">{user.bio}</p>
+              ) : (
+                <span className="text-muted-foreground font-normal">
+                  No bio added yet
+                </span>
+              )}
+            </ProfileDetail>
+            <ChangeBioDialog
+              currentBio={user.bio}
+              onBioUpdated={handleBioUpdated}
             />
           </div>
         </CardContent>
