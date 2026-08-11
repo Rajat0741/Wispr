@@ -1,10 +1,9 @@
 "use client";
 
-import { LoaderCircleIcon, XIcon } from "lucide-react";
+import { LoaderCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,7 +15,7 @@ import {
 import type { SearchUser } from "@/features/chat-list/components/user-search/user-item";
 import { UserSearch } from "@/features/chat-list/components/user-search/user-search";
 import { addGroupMember } from "@/features/common/actions/add-group-member";
-import { UserAvatar } from "@/features/common/components/user-avatar";
+import { SelectedMemberBadges } from "@/features/common/components/selected-member-badges";
 
 export function AddGroupMemberDialog({
   open,
@@ -47,42 +46,14 @@ export function AddGroupMemberDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex min-h-10 flex-wrap items-center gap-1.5 border border-border bg-muted/40 p-2">
-          {selectedUsers.length === 0 ? (
-            <span className="px-1 text-xs italic text-muted-foreground">
-              Select users below.
-            </span>
-          ) : (
-            selectedUsers.map((user) => (
-              <Badge
-                key={user.id}
-                variant="outline"
-                className="flex items-center gap-2 px-2.5 py-3.5 text-base"
-              >
-                <UserAvatar
-                  name={user.name}
-                  image={user.image}
-                  className="size-4"
-                  fallbackClassName="text-[10px]"
-                />
-                <span className="max-w-25 truncate">{user.name}</span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedUsers((users) =>
-                      users.filter((selected) => selected.id !== user.id),
-                    )
-                  }
-                  disabled={isExecuting}
-                  className="transition-colors hover:text-destructive focus:outline-none"
-                  title={`Remove ${user.name}`}
-                >
-                  <XIcon className="size-4" />
-                </button>
-              </Badge>
-            ))
-          )}
-        </div>
+        <SelectedMemberBadges
+          members={selectedUsers}
+          onRemove={(id) =>
+            setSelectedUsers((users) => users.filter((u) => u.id !== id))
+          }
+          disabled={isExecuting}
+          emptyMessage="Select users below."
+        />
 
         <UserSearch
           onSelectUser={(user) =>
@@ -116,12 +87,6 @@ export function AddGroupMemberDialog({
           {selectedUsers.length === 1 ? "" : "s"}
         </Button>
 
-        {isExecuting && (
-          <div className="flex items-center justify-center gap-2 border-t border-border p-3 text-sm text-muted-foreground">
-            <LoaderCircleIcon className="size-4 animate-spin" />
-            Adding member...
-          </div>
-        )}
         {result.serverError && (
           <div className="border-t border-border p-3 text-center text-sm text-destructive">
             {result.serverError}

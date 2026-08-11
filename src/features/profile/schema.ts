@@ -11,15 +11,12 @@ export const usernameSchema = z
     "Only letters, numbers and underscores are allowed.",
   );
 
-export const updateUsernameSchema = z.object({
-  username: usernameSchema,
-});
-
 export const bioSchema = z
   .string()
   .trim()
   .max(200, "Bio cannot exceed 200 characters.");
 
-export const updateBioSchema = z.object({
-  bio: bioSchema,
+export const updateProfileSchema = z.object({
+  username: usernameSchema.optional(),
+  bio: bioSchema.optional(),
 });

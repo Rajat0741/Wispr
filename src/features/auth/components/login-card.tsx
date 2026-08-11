@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { Logo } from "@/components/logo";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,11 +12,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
-import { Button } from "@/components/ui/button";
+import { AppError } from "@/utils/app-error";
 
 export function LoginCard() {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AppError | null>(null);
+
+  if (error) {
+    throw error;
+  }
 
   const handleGoogleLogin = async () => {
     try {
@@ -23,10 +28,19 @@ export function LoginCard() {
       setError(null);
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/profile",
+        callbackURL: "/chat",
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred.");
+      setError(
+        err instanceof AppError
+          ? err
+          : new AppError(
+              err instanceof Error
+                ? err.message
+                : "An unexpected error occurred.",
+              500,
+            ),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -42,26 +56,21 @@ export function LoginCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error && (
-          <p
-            className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
-            role="alert"
-          >
-            {error}
-          </p>
-        )}
         <Button
           type="button"
           onClick={handleGoogleLogin}
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-background px-4 py-2.5 font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+          variant="outline"
+          className="w-full gap-3 rounded-xl border-border px-4 py-2.5 hover:bg-muted"
         >
           {isLoading ? (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           ) : (
             <FcGoogle aria-hidden="true" className="size-5" />
           )}
-          <span className="text-foreground">{isLoading ? "Signing in..." : "Continue with Google"}</span>
+          <span className="text-foreground">
+            {isLoading ? "Signing in..." : "Continue with Google"}
+          </span>
         </Button>
       </CardContent>
     </Card>

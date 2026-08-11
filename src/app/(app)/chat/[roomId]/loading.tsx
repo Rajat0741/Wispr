@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ChatRoomLoading() {
   return (
-    <div className="flex h-screen w-full flex-col bg-background">
+    <div className="flex h-full w-full flex-col bg-background">
       {/* Header Skeleton */}
       <header className="flex items-center gap-3 border-b px-4 py-3 shrink-0">
         <Skeleton className="size-8 rounded-full" />

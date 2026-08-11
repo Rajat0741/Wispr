@@ -54,7 +54,7 @@ export function ChatItem({
       onSelect={onSelect}
       data-active={isActive}
       className={cn(
-        "group p-0 mt-2 cursor-pointer [&>svg:last-child]:hidden hover:bg-accent",
+        "group/item p-0 mt-2 cursor-pointer [&>svg:last-child]:hidden hover:bg-accent",
         isHighlighted
           ? "bg-accent data-selected:bg-accent"
           : "data-selected:bg-transparent",

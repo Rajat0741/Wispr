@@ -2,11 +2,10 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
-import { LoaderCircleIcon, UsersIcon, XIcon } from "lucide-react";
+import { LoaderCircleIcon, UsersIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,7 +26,7 @@ import { createGroup } from "@/features/chat-list/actions/create-group";
 import type { SearchUser } from "@/features/chat-list/components/user-search/user-item";
 import { UserSearch } from "@/features/chat-list/components/user-search/user-search";
 import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
-import { UserAvatar } from "@/features/common/components/user-avatar";
+import { SelectedMemberBadges } from "@/features/common/components/selected-member-badges";
 
 function toFieldErrors(errors: readonly unknown[]) {
   return errors.map((msg) => ({ message: String(msg) }));
@@ -137,40 +136,12 @@ export function NewGroupForm({ onSuccess, onCancel }: NewGroupFormProps) {
               <>
                 <Field data-invalid={hasErrors}>
                   <FieldLabel>Selected Members ({members.length})</FieldLabel>
-                  <div className="flex flex-wrap gap-1.5 p-2 bg-muted/40 border border-border min-h-10 items-center">
-                    {members.length === 0 ? (
-                      <span className="text-xs text-muted-foreground italic px-1">
-                        Select at least 1 member below.
-                      </span>
-                    ) : (
-                      members.map((member) => (
-                        <Badge
-                          key={member.id}
-                          variant="outline"
-                          className="flex items-center gap-2 px-2.5 py-3.5 text-base"
-                        >
-                          <UserAvatar
-                            name={member.name}
-                            image={member.image}
-                            className="size-4"
-                            fallbackClassName="text-[10px]"
-                          />
-                          <span className="max-w-25 truncate">
-                            {member.name}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeMember(member.id)}
-                            disabled={isExecuting}
-                            className="hover:text-destructive transition-colors focus:outline-none"
-                            title={`Remove ${member.name}`}
-                          >
-                            <XIcon className="size-4" />
-                          </button>
-                        </Badge>
-                      ))
-                    )}
-                  </div>
+                  <SelectedMemberBadges
+                    members={members}
+                    onRemove={removeMember}
+                    disabled={isExecuting}
+                    emptyMessage="Select at least 1 member below."
+                  />
                   {hasErrors ? <FieldError errors={errorObjects} /> : null}
                 </Field>
 
@@ -259,7 +230,8 @@ export function NewGroup() {
     <>
       <Button
         type="button"
-        className="size-8 bg-transparent hover:bg-accent p-4"
+        variant="ghost"
+        size="icon"
         onClick={() => setOpen(true)}
         title="New group"
       >

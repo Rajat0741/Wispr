@@ -6,7 +6,6 @@ import {
   SettingsIcon,
   UsersIcon,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import {
@@ -20,11 +19,12 @@ import {
 import { logoutAction } from "@/features/auth/actions/logout";
 import { NewGroupDialog } from "@/features/chat-list/components/dialogs/new-group-dialog";
 import { UserAvatar } from "@/features/common/components/user-avatar";
+import { ProfileDialog } from "@/features/profile/components/profile-dialog";
 import { authClient } from "@/lib/auth-client";
 
 export function UserMenu() {
-  const router = useRouter();
   const [newGroupOpen, setNewGroupOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const { execute: handleLogout, isExecuting: isLoggingOut } = useAction(logoutAction);
   const { data: session, isPending } = authClient.useSession();
 
@@ -50,11 +50,11 @@ export function UserMenu() {
               <UsersIcon className="size-5" />
               New Group
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/profile")}>
+            <DropdownMenuItem onClick={() => setProfileOpen(true)}>
               <BadgeCheckIcon className="size-5" />
-              Account & Profile
+              Account &amp; Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/profile")}>
+            <DropdownMenuItem onClick={() => setProfileOpen(true)}>
               <SettingsIcon className="size-5" />
               Settings
             </DropdownMenuItem>
@@ -72,6 +72,25 @@ export function UserMenu() {
       </DropdownMenu>
 
       <NewGroupDialog open={newGroupOpen} onOpenChange={setNewGroupOpen} />
+
+      {user && (
+        <ProfileDialog
+          open={profileOpen}
+          onOpenChange={setProfileOpen}
+          user={{
+            name: user.name,
+            image: user.image,
+            username: (user as { username?: string | null }).username ?? null,
+            bio: (user as { bio?: string | null }).bio ?? null,
+            email: user.email,
+            emailVerified: user.emailVerified,
+            createdAt: new Intl.DateTimeFormat("en-US", {
+              month: "long",
+              year: "numeric",
+            }).format(new Date(user.createdAt)),
+          }}
+        />
+      )}
     </>
   );
 }
