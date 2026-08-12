@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { Logo } from "@/components/logo";
@@ -47,21 +48,23 @@ export function LoginCard() {
   };
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center flex flex-col items-center">
-        <Logo size="md" className="mb-2" />
-        <CardTitle className="text-2xl">Join Convo</CardTitle>
+    <Card className="w-full max-w-md border-border/70 bg-card/90 py-7 shadow-xl shadow-black/5 backdrop-blur-sm">
+      <CardHeader className="flex flex-col items-center gap-2 text-center">
+        <Logo size="md" className="mb-3" />
+        <CardTitle className="text-3xl font-semibold tracking-tight">
+          Welcome to wispr
+        </CardTitle>
         <CardDescription>
-          Sign in to continue to your conversations
+          A quieter place for better conversations.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5 pt-3">
         <Button
           type="button"
           onClick={handleGoogleLogin}
           disabled={isLoading}
           variant="outline"
-          className="w-full gap-3 rounded-xl border-border px-4 py-2.5 hover:bg-muted"
+          className="h-12 w-full gap-3 rounded-xl border-border px-4 hover:bg-muted"
         >
           {isLoading ? (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -71,7 +74,14 @@ export function LoginCard() {
           <span className="text-foreground">
             {isLoading ? "Signing in..." : "Continue with Google"}
           </span>
+          {!isLoading && (
+            <ArrowRight className="ml-auto size-4 text-muted-foreground" />
+          )}
         </Button>
+        <p className="text-center text-xs leading-5 text-muted-foreground">
+          By continuing, you agree to keep wispr a thoughtful space for
+          everyone.
+        </p>
       </CardContent>
     </Card>
   );

@@ -48,11 +48,12 @@
 }
 
 :root {
+  --chat-message-background: oklch(90.704% 0.1464 154.936);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(90.704% 0.1464 154.936);
+  --primary: oklch(88.076% 0.22234 150.834);
   --primary-foreground: oklch(0.979 0.021 166.113);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);

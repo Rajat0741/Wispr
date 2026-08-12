@@ -10,7 +10,7 @@ export function Provider({ children }: { children: ReactNode }) {
   const queryClient = getQueryClient();
 
   return (
-    <ThemeProvider attribute="class" enableSystem disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
       <QueryClientProvider client={queryClient}>
         <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
       </QueryClientProvider>

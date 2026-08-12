@@ -1,6 +1,6 @@
-# Convo
+# Wispr
 
-Convo is a real-time chat application built with Next.js. Authentication is handled by Better Auth, with Drizzle ORM and Supabase Postgres providing the data layer, and Supabase Realtime supplying instant broadcast messaging.
+Wispr is a real-time chat application built with Next.js. Authentication is handled by Better Auth, with Drizzle ORM and Supabase Postgres providing the data layer, and Supabase Realtime supplying instant broadcast messaging.
 
 ## Development
 
@@ -46,7 +46,7 @@ pnpm db:push
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to use Convo.
+Open [http://localhost:3000](http://localhost:3000) to use Wispr.
 
 ## Scripts
 

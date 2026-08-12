@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Streamdown } from "streamdown";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import type { MessageWithSender } from "@/features/chat/types";
+import { cn } from "@/lib/utils";
 import { ChatMessageMention, renderMentions } from "./chat-message-mention";
 import { ReplyPreview } from "./reply-preview";
 
@@ -25,7 +26,13 @@ export function ChatMessageBubble({
 
   return (
     <Bubble variant={isMine ? "default" : "muted"}>
-      <BubbleContent className="max-w-2xl px-2 rounded-md">
+      <BubbleContent
+        className={cn(
+          "max-w-2xl rounded-md px-2",
+          isMine &&
+            "data-[slot=bubble-content]:!bg-[var(--chat-message-background,var(--primary))]",
+        )}
+      >
         {isReply && (
           <ReplyPreview
             message={replyTarget}
