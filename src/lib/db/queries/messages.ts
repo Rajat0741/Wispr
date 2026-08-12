@@ -12,6 +12,9 @@ const defaultMessageWithRelations = {
         id: true,
         name: true,
         image: true,
+        username: true,
+        displayUsername: true,
+        lastActiveAt: true,
       },
     },
     replyToMessage: {

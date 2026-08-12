@@ -54,8 +54,11 @@ export const sendMessage = roomActionClient
         ...newMessage,
         sender: {
           id: user.id,
-          name: user.name ?? null,
+          name: user.name,
           image: user.image ?? null,
+          username: user.username ?? null,
+          displayUsername: user.displayUsername ?? null,
+          lastActiveAt: null,
         },
         replyToMessage: replyToMessage ?? null,
       };

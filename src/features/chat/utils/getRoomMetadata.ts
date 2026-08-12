@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from "date-fns";
 import type { GroupType } from "@/lib/db/schema";
 import type { User } from "@/types/user";
 
@@ -12,7 +13,9 @@ export function getRoomMetadata(
     return {
       title: partner?.name ?? "Direct Message",
       image: partner?.image ?? null,
-      subtitle: null,
+      subtitle: partner?.lastActiveAt
+        ? `Last seen ${formatDistanceToNow(new Date(partner.lastActiveAt), { addSuffix: true })}`
+        : "Last seen Never",
     };
   }
 

@@ -166,6 +166,8 @@ function ChatMessageList() {
                               name={message.sender?.name}
                               image={message.sender?.image}
                               className="size-7"
+                              enablePopover={!!message.sender?.id}
+                              popoverUserId={message.sender?.id}
                             />
                           </MessageAvatar>
                         )}

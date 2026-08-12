@@ -18,6 +18,7 @@ export const user = pgTable("user", {
     .notNull(),
   username: text("username").unique(),
   displayUsername: text("display_username"),
+  lastActiveAt: timestamp("last_active_at"),
   bio: text("bio"),
 });
 

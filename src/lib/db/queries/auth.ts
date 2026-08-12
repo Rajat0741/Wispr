@@ -24,10 +24,12 @@ export const getUserById = async (id: string) => {
   const [foundUser] = await db
     .select({
       id: user.id,
-      username: user.username,
       name: user.name,
+      username: user.username,
+      displayUsername: user.displayUsername,
       image: user.image,
       bio: user.bio,
+      lastActiveAt: user.lastActiveAt,
     })
     .from(user)
     .where(eq(user.id, id))
