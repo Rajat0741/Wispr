@@ -2,7 +2,6 @@ import { ArrowUpRight, MessageCircle, Sparkles } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -11,7 +10,7 @@ export default async function Home() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   return (
-    <main className="relative isolate flex min-h-full flex-col overflow-hidden bg-background">
+    <main className="dark relative isolate flex min-h-full flex-col overflow-hidden bg-background">
       <div className="pointer-events-none absolute -right-32 -top-32 -z-10 size-96 rounded-full bg-primary/15 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-48 -left-32 -z-10 size-96 rounded-full bg-emerald-300/10 blur-3xl" />
 
@@ -20,7 +19,6 @@ export default async function Home() {
           <Logo size="sm" />
           <span className="text-lg font-semibold tracking-tight">wispr</span>
         </div>
-        <ThemeToggle />
       </header>
 
       <div className="mx-auto flex w-full max-w-7xl flex-1 items-center px-5 pb-16 pt-8 sm:px-8 sm:pb-24">
