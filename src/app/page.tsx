@@ -25,7 +25,7 @@ export default async function Home() {
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
           {session ? (
             <Link
-              href="/chat"
+              href={session.user.username ? "/chat" : "/onboarding"}
               className={cn(buttonVariants({ size: "lg" }))}
             >
               Open Convo

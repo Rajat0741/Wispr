@@ -28,7 +28,7 @@ export function LoginCard() {
       setError(null);
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/chat",
+        callbackURL: "/onboarding",
       });
     } catch (err) {
       setError(

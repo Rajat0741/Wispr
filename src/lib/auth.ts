@@ -6,6 +6,13 @@ import { account, session, user, verification } from "@/lib/db/schema";
 import { dash } from "@better-auth/infra";
 
 export const auth = betterAuth({
+  appName: "Wispr",
+  advanced: {
+    ipAddress: {
+      ipAddressHeaders: ["x-vercel-forwarded-for", "x-forwarded-for"],
+    },
+  },
+
   baseURL: process.env.BETTER_AUTH_URL,
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -16,6 +23,9 @@ export const auth = betterAuth({
       account,
     },
   }),
+  onAPIError: {
+    errorURL: "/auth/error",
+  },
   user: {
     additionalFields: {
       bio: {
