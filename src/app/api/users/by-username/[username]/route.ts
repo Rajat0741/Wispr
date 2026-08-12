@@ -1,16 +1,16 @@
-import { getUserById } from "@/lib/db/queries/auth";
+import { getUserByUsername } from "@/lib/db/queries/auth";
 import { getUserSession } from "@/lib/getUser";
 import { AppError } from "@/utils/app-error";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ userId: string }> },
+  { params }: { params: Promise<{ username: string }> },
 ) {
-  const { userId } = await params;
+  const { username } = await params;
 
   try {
     await getUserSession(request.headers);
-    const profile = await getUserById(userId);
+    const profile = await getUserByUsername(username);
 
     if (!profile) {
       return Response.json({ error: "User not found." }, { status: 404 });

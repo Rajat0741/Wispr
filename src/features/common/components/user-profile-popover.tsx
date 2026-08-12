@@ -25,13 +25,15 @@ import { authClient } from "@/lib/auth-client";
 import { UserAvatar } from "./user-avatar";
 
 export interface UserProfilePopoverProps {
-  userId: string;
+  username: string;
   children: React.ReactNode;
+  render?: React.ReactElement;
 }
 
 export function UserProfilePopover({
-  userId,
+  username,
   children,
+  render = <div />,
 }: UserProfilePopoverProps) {
   const { data: session } = authClient.useSession();
   const router = useRouter();
@@ -39,7 +41,7 @@ export function UserProfilePopover({
 
   const currentUserId = session?.user?.id;
 
-  const { data: profile, isLoading } = useUserProfileQuery(userId, open);
+  const { data: profile, isLoading } = useUserProfileQuery(username, open);
 
   const { execute, isExecuting } = useAction(createDm, {
     onSuccess: ({ data }) => {
@@ -49,7 +51,7 @@ export function UserProfilePopover({
     },
   });
 
-  const isSelf = userId === currentUserId;
+  const isSelf = profile?.id === currentUserId;
 
   const displayName = profile?.name ?? null;
   const displayImage = profile?.image ?? null;
@@ -66,7 +68,7 @@ export function UserProfilePopover({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger nativeButton={false} render={<div />}>
+      <PopoverTrigger nativeButton={false} render={render}>
         {children}
       </PopoverTrigger>
 
@@ -123,9 +125,9 @@ export function UserProfilePopover({
             {/* Message Action */}
             {!isSelf && (
               <Button
-                className="w-full h-10 rounded-xl gap-2 font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+                className="w-full h-10 rounded-xl gap-2 font-medium bg-primary text-foreground hover:bg-primary/90 transition-colors shadow-sm"
                 disabled={isExecuting}
-                onClick={() => execute({ userId })}
+                onClick={() => profile?.id && execute({ userId: profile.id })}
               >
                 <MessageCircleIcon className="size-4" />
                 {isExecuting ? "Opening…" : "Message"}

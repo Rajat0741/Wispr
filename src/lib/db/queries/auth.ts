@@ -20,6 +20,24 @@ export const searchUsersByUsername = async (
   return users;
 };
 
+export const getUserByUsername = async (username: string) => {
+  const [foundUser] = await db
+    .select({
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      displayUsername: user.displayUsername,
+      image: user.image,
+      bio: user.bio,
+      lastActiveAt: user.lastActiveAt,
+    })
+    .from(user)
+    .where(ilike(user.username, username))
+    .limit(1);
+
+  return foundUser ?? null;
+};
+
 export const getUserById = async (id: string) => {
   const [foundUser] = await db
     .select({

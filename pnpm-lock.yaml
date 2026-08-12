@@ -80,6 +80,9 @@ importers:
       react-icons:
         specifier: ^5.7.0
         version: 5.7.0(react@19.2.4)
+      react-mentions-ts:
+        specifier: ^6.0.0
+        version: 6.0.0(class-variance-authority@0.7.1)(clsx@2.1.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(tailwind-merge@3.6.0)
       react-resizable-panels:
         specifier: ^4.12.2
         version: 4.12.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -3395,6 +3398,16 @@ packages:
     resolution: {integrity: sha512-LBLy340Rzqy6+/yVhZKT3B/QpP1BZaesGqasf09HPOBzRarcDIFH0WwXlXQfE7q7ipxK4MSiC5DIBWURCny6fw==}
     peerDependencies:
       react: '*'
+
+  react-mentions-ts@6.0.0:
+    resolution: {integrity: sha512-uOg1BzedDZXfNJQJ6cuv75euu9SngGbaetrv3SKJFrTIT5000yN7PMNyqlS4gRCNfgT+lpELAuHGvF3qOBJCWQ==}
+    engines: {node: '>=22.12.0'}
+    peerDependencies:
+      class-variance-authority: '>=0.6.0'
+      clsx: '>=2.0.0'
+      react: '>=19.0.3 <19.1.0 || >=19.1.4 <19.2.0 || >=19.2.3'
+      react-dom: '>=19.0.0'
+      tailwind-merge: '>=3.0.0'
 
   react-remove-scroll-bar@2.3.8:
     resolution: {integrity: sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q==}
@@ -6934,6 +6947,14 @@ snapshots:
   react-icons@5.7.0(react@19.2.4):
     dependencies:
       react: 19.2.4
+
+  react-mentions-ts@6.0.0(class-variance-authority@0.7.1)(clsx@2.1.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(tailwind-merge@3.6.0):
+    dependencies:
+      class-variance-authority: 0.7.1
+      clsx: 2.1.1
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+      tailwind-merge: 3.6.0
 
   react-remove-scroll-bar@2.3.8(@types/react@19.2.17)(react@19.2.4):
     dependencies:

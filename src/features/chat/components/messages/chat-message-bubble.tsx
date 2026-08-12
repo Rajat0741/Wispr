@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Streamdown } from "streamdown";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import type { MessageWithSender } from "@/features/chat/types";
+import { ChatMessageMention, renderMentions } from "./chat-message-mention";
 import { ReplyPreview } from "./reply-preview";
 
 interface ChatMessageBubbleProps {
@@ -28,19 +29,28 @@ export function ChatMessageBubble({
         {isReply && (
           <ReplyPreview
             message={replyTarget}
-            onClick={replyTarget ? () => onReplyTargetClick(replyTarget) : undefined}
+            onClick={
+              replyTarget ? () => onReplyTargetClick(replyTarget) : undefined
+            }
             className="mb-1"
           />
         )}
 
-        <Streamdown className="typeset typeset-docs">
-          {message.content}
+        <Streamdown
+          className="typeset typeset-docs select-none md:select-text"
+          allowedTags={{ mention: ["username"] }}
+          components={{
+            mention: ({ username }) => (
+              <ChatMessageMention username={String(username ?? "")} />
+            ),
+          }}
+        >
+          {renderMentions(message.content)}
         </Streamdown>
-            <span className="mt-1 block text-right text-[10px] text-muted-foreground">
+        <span className="mt-1 block text-right text-[10px] text-muted-foreground select-none">
           {format(new Date(message.createdAt), "h:mm a")}
         </span>
       </BubbleContent>
     </Bubble>
   );
 }
-

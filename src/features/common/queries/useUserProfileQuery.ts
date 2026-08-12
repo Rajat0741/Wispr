@@ -13,21 +13,21 @@ export interface UserProfile {
   lastActiveAt: string | null; // ISO string from JSON serialization
 }
 
-async function fetchUserProfile(userId: string): Promise<UserProfile> {
+async function fetchUserProfile(username: string): Promise<UserProfile> {
   const { data, error } = await betterFetch<UserProfile>(
-    `/api/users/${userId}`,
+    `/api/users/by-username/${encodeURIComponent(username)}`,
   );
   if (error) throw new Error("Failed to fetch user profile.");
   return data;
 }
 
-export const userProfileQueryKey = (userId: string) =>
-  ["user-profile", userId] as const;
+export const userProfileQueryKey = (username: string) =>
+  ["user-profile", username] as const;
 
-export function useUserProfileQuery(userId: string, enabled: boolean) {
+export function useUserProfileQuery(username: string, enabled: boolean) {
   return useQuery({
-    queryKey: userProfileQueryKey(userId),
-    queryFn: () => fetchUserProfile(userId),
+    queryKey: userProfileQueryKey(username),
+    queryFn: () => fetchUserProfile(username),
     enabled,
     staleTime: 30_000,
   });

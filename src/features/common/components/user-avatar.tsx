@@ -10,7 +10,7 @@ interface UserAvatarProps {
   className?: string;
   fallbackClassName?: string;
   enablePopover?: boolean;
-  popoverUserId?: string;
+  popoverUsername?: string;
 }
 
 export function UserAvatar({
@@ -19,7 +19,7 @@ export function UserAvatar({
   className,
   fallbackClassName,
   enablePopover,
-  popoverUserId,
+  popoverUsername,
 }: UserAvatarProps) {
   const fallback = name?.trim() ? name.trim().charAt(0).toUpperCase() : "?";
 
@@ -34,9 +34,9 @@ export function UserAvatar({
     </Avatar>
   );
 
-  if (enablePopover && popoverUserId) {
+  if (enablePopover && popoverUsername) {
     return (
-      <UserProfilePopover userId={popoverUserId}>
+      <UserProfilePopover username={popoverUsername}>
         {avatar}
       </UserProfilePopover>
     );
