@@ -2,9 +2,13 @@
 
 import { z } from "zod";
 import { CHAT_EVENTS } from "@/features/chat/constants";
-import { getRoomMemberIds, updateGroupDescriptionQuery } from "@/lib/db/queries";
+import type { MessageWithSender } from "@/features/chat/types";
+import {
+  getRoomMemberIds,
+  updateGroupDescriptionTransaction,
+} from "@/lib/db/queries";
 import { roomActionClient } from "@/lib/safe-action";
-import { broadcastToUsers } from "@/lib/supabase/server";
+import { broadcastToRoom, broadcastToUsers } from "@/lib/supabase/server";
 import { AppError } from "@/utils/app-error";
 
 const updateGroupDescriptionSchema = z.object({
@@ -18,7 +22,10 @@ const updateGroupDescriptionSchema = z.object({
 export const updateGroupDescription = roomActionClient
   .inputSchema(updateGroupDescriptionSchema)
   .action(
-    async ({ parsedInput: { roomId, description }, ctx: { roomData } }) => {
+    async ({
+      parsedInput: { roomId, description },
+      ctx: { user, roomData },
+    }) => {
       if (roomData.roomMember.role !== "admin") {
         throw new AppError(
           "Only group admins can edit the group description.",
@@ -26,19 +33,36 @@ export const updateGroupDescription = roomActionClient
         );
       }
 
-      const updatedGroup = await updateGroupDescriptionQuery(
+      const result = await updateGroupDescriptionTransaction(
         roomId,
         description,
+        `@${user.username}`,
       );
 
-      if (!updatedGroup) {
+      if (!result) {
         throw new AppError("Failed to update group description.", 500);
       }
 
+      const { updatedGroup, message } = result;
+
       const memberIds = await getRoomMemberIds(roomId);
-      await broadcastToUsers(memberIds, CHAT_EVENTS.CHAT_LIST_UPDATED, {
-        roomId,
-      });
+
+      await Promise.all([
+        // Append the announcement to the active room's message list
+        broadcastToRoom<MessageWithSender>(
+          roomId,
+          CHAT_EVENTS.MESSAGE_UPDATES,
+          {
+            ...message,
+            sender: null,
+            replyToMessage: null,
+          },
+        ),
+        // Signal active room members to refetch group metadata
+        broadcastToRoom(roomId, CHAT_EVENTS.ROOM_DATA_UPDATED, { roomId }),
+        // Refresh the chat-list sidebar for all members
+        broadcastToUsers(memberIds, CHAT_EVENTS.CHAT_LIST_UPDATED, { roomId }),
+      ]);
 
       return {
         description: updatedGroup.description,

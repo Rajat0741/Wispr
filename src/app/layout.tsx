@@ -33,9 +33,6 @@ export default function RootLayout({
     >
       <body className="h-svh flex flex-col overflow-hidden">
         <Provider>
-          <div className="fixed top-4 right-16 z-50">
-            <ThemeToggle />
-          </div>
           {children}
           <Toaster />
         </Provider>

@@ -32,7 +32,7 @@ export const addGroupMember = roomActionClient
       const { members, message } = await addGroupMemberTransaction({
         roomId,
         userIds: uniqueUserIds,
-        addedByName: user.name ?? "A user",
+        addedByName: `@${user.username}`,
       });
 
       if (members.length === 0) {

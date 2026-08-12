@@ -11,6 +11,7 @@ import { CHAT_EVENTS, REALTIME_TOPICS } from "@/features/chat/constants";
 import type { MessageWithSender } from "@/features/chat/types";
 import { useRealtimeToken } from "@/hooks/use-realtime-token";
 import { supabase } from "@/lib/supabase/client";
+import { useInvalidateRoomData } from "./useRoomDataQuery";
 import {
   type MessagesPage,
   updateMessagesCache,
@@ -46,6 +47,8 @@ export function useMessages(roomId: string) {
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
+  const invalidateRoomData = useInvalidateRoomData();
+
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
@@ -69,6 +72,9 @@ export function useMessages(roomId: string) {
             );
           },
         )
+        .on("broadcast", { event: CHAT_EVENTS.ROOM_DATA_UPDATED }, () => {
+          void invalidateRoomData(roomId);
+        })
         .subscribe((status, err) => {
           if (status === "CHANNEL_ERROR") {
             console.error("Access denied to private room channel:", err);
@@ -83,7 +89,7 @@ export function useMessages(roomId: string) {
         void supabase.removeChannel(channel);
       }
     };
-  }, [roomId, queryClient, queryKey, realtimeToken.isSuccess]);
+  }, [roomId, queryClient, queryKey, realtimeToken.isSuccess, invalidateRoomData]);
 
   const messages = (query.data?.pages ?? [])
     .slice()

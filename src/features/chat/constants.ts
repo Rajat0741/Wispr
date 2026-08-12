@@ -1,6 +1,7 @@
 export const CHAT_EVENTS = {
   MESSAGE_UPDATES: "message_updates",
   CHAT_LIST_UPDATED: "chat_list_updated",
+  ROOM_DATA_UPDATED: "room_data_updated",
 } as const;
 
 export const REALTIME_TOPICS = {

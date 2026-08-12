@@ -11,6 +11,11 @@ export interface RoomData {
   currentUserId: string;
   roomType: "dm" | "group";
   members: RoomMember[];
+  /**
+   * group is kept in RoomData so the initial title/image can be derived
+   * server-side, but it is NOT the live source of truth for group metadata.
+   * Use useRoomDataQuery for reactive group data.
+   */
   group: GroupType | null;
 }
 

@@ -18,7 +18,7 @@ export const leaveGroup = roomActionClient
     const message = await leaveGroupTransaction(
       roomId,
       user.id,
-      user.name ?? "A user",
+      `@${user.username}`,
     );
 
     await broadcastToRoom<MessageWithSender>(

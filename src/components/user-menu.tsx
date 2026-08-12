@@ -3,11 +3,12 @@
 import {
   BadgeCheckIcon,
   LogOutIcon,
-  SettingsIcon,
   UsersIcon,
 } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
+import { useTheme } from "next-themes";
 import { useState } from "react";
+import { FaCircleHalfStroke } from "react-icons/fa6";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,12 +28,15 @@ export function UserMenu() {
   const [profileOpen, setProfileOpen] = useState(false);
   const { execute: handleLogout, isExecuting: isLoggingOut } = useAction(logoutAction);
   const { data: session, isPending } = authClient.useSession();
+  const { resolvedTheme, setTheme } = useTheme();
 
   const user = session?.user;
 
   if (isPending || !user) {
     return <div className="size-8 rounded-full bg-muted animate-pulse" />;
   }
+
+  const isDark = resolvedTheme === "dark";
 
   return (
     <>
@@ -54,9 +58,11 @@ export function UserMenu() {
               <BadgeCheckIcon className="size-5" />
               Account &amp; Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setProfileOpen(true)}>
-              <SettingsIcon className="size-5" />
-              Settings
+            <DropdownMenuItem
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+            >
+              <FaCircleHalfStroke className="size-4" />
+              {isDark ? "Light Mode" : "Dark Mode"}
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />

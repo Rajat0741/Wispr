@@ -21,11 +21,11 @@ import {
 } from "@/components/ui/sheet";
 import { EditGroupDescriptionDialog } from "@/features/chat/components/dialogs/edit-group-description-dialog";
 import { useChatStore } from "@/features/chat/components/layout/chat-provider";
+import { useRoomDataQuery } from "@/features/chat/queries/useRoomDataQuery";
 import { deleteChat } from "@/features/common/actions/delete-chat";
 import { leaveGroup } from "@/features/common/actions/leave-group";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useConfirm } from "@/lib/providers/confirm-dialog-provider";
-import { cn } from "@/lib/utils";
 import { RoomInfoHeader } from "./room-info-header";
 import { RoomMemberList } from "./room-member-list";
 
@@ -41,8 +41,10 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
   const members = useChatStore((s) => s.members);
   const roomType = useChatStore((s) => s.roomType);
   const currentUserId = useChatStore((s) => s.currentUserId);
-  const group = useChatStore((s) => s.group);
   const roomId = useChatStore((s) => s.roomId);
+
+  const { data: group } = useRoomDataQuery(roomId);
+
   const isMobile = useIsMobile();
   const isGroup = roomType === "group";
   const router = useRouter();
@@ -136,9 +138,7 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
             )}
           </div>
           <p className="text-sm text-foreground wrap-break-word line-clamp-4 min-w-0 w-full">
-            {group?.description?.trim()
-              ? group.description
-              : "No description set"}
+            {group?.description?.trim() ? group.description : "No description set"}
           </p>
         </div>
       )}
@@ -221,9 +221,6 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
           currentDescription={group?.description}
           open={editDescriptionOpen}
           onOpenChange={setEditDescriptionOpen}
-          onSuccess={() => {
-            router.refresh();
-          }}
         />
       )}
     </>

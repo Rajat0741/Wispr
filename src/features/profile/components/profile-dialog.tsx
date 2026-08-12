@@ -1,17 +1,29 @@
 "use client";
 
-import { MailIcon, ShieldCheckIcon, UserRoundIcon } from "lucide-react";
+import { ShieldCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemSeparator,
+  ItemTitle,
+} from "@/components/ui/item";
 import { toast } from "@/components/ui/toast";
 import { BioField } from "@/features/profile/components/bio-field";
-import { ProfileHeader } from "@/features/profile/components/profile-header";
-import { ProfileRow } from "@/features/profile/components/profile-row";
+import { ProfileItem } from "@/features/profile/components/profile-item";
 import { UsernameField } from "@/features/profile/components/username-field";
+import { UserAvatar } from "@/features/common/components/user-avatar";
 
 interface ProfileDialogProps {
   open: boolean;
@@ -27,7 +39,11 @@ interface ProfileDialogProps {
   };
 }
 
-export function ProfileDialog({ open, onOpenChange, user }: ProfileDialogProps) {
+export function ProfileDialog({
+  open,
+  onOpenChange,
+  user,
+}: ProfileDialogProps) {
   const router = useRouter();
   const [username, setUsername] = useState(user.username ?? null);
   const [bio, setBio] = useState(user.bio ?? null);
@@ -46,53 +62,46 @@ export function ProfileDialog({ open, onOpenChange, user }: ProfileDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
-        <ProfileHeader
-          name={user.name}
-          email={user.email}
-          image={user.image}
-          emailVerified={user.emailVerified}
-        />
+      <DialogContent className="max-h-[85vh] flex flex-col p-0 pr-6 gap-0 ">
+        <DialogHeader className="p-6 pb-2">
+          <DialogTitle className="text-xl">Profile</DialogTitle>
+        </DialogHeader>
 
-        <div className="flex flex-col gap-0 py-2">
-          <ProfileRow icon={UserRoundIcon} label="Name">
-            <span className="font-medium">{user.name}</span>
-          </ProfileRow>
+        <ItemGroup className="px-6 py-2 gap-0">
+          <Item>
+            <ItemMedia>
+              <UserAvatar
+                name={user.name}
+                image={user.image}
+                className="size-16 ring-4 ring-background"
+              />
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle>{user.name}</ItemTitle>
+              <ItemDescription>{user.email}</ItemDescription>
+            </ItemContent>
+          </Item>
 
-          <Separator className="mx-4 w-auto" />
+          <ItemSeparator className="mx-4" />
 
-          <ProfileRow icon={MailIcon} label="Email">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium truncate">{user.email}</span>
-              <Badge
-                variant={user.emailVerified ? "default" : "outline"}
-                className="text-xs"
-              >
-                {user.emailVerified ? "Verified" : "Not verified"}
-              </Badge>
-            </div>
-          </ProfileRow>
+          <ProfileItem icon={ShieldCheckIcon} label="Member since">
+            <span className="font-medium text-foreground">
+              {user.createdAt}
+            </span>
+          </ProfileItem>
 
-          <Separator className="mx-4 w-auto" />
+          <ItemSeparator className="mx-4" />
 
-          <ProfileRow icon={ShieldCheckIcon} label="Member since">
-            <span className="font-medium">{user.createdAt}</span>
-          </ProfileRow>
+          <UsernameField
+            currentUsername={username}
+            onSaved={handleUsernameSaved}
+          />
 
-          <Separator className="mx-4 w-auto" />
-
-          <UsernameField currentUsername={username} onSaved={handleUsernameSaved} />
-
-          <Separator className="mx-4 w-auto" />
+          <ItemSeparator className="mx-4" />
 
           <BioField currentBio={bio} onSaved={handleBioSaved} />
-        </div>
+        </ItemGroup>
 
-        <div className="border-t px-6 py-3 flex justify-end">
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
-            Done
-          </Button>
-        </div>
       </DialogContent>
     </Dialog>
   );

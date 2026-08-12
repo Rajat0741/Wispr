@@ -97,11 +97,11 @@ export const addGroupMemberTransaction = async ({
         authUser.id,
         members.map((member) => member.userId),
       ),
-      columns: { id: true, name: true },
+      columns: { id: true, username: true },
     });
 
     const addedUserNames = addedUsers
-      .map((addedUser) => addedUser.name)
+      .map((addedUser) => `@${addedUser.username}`)
       .join(", ");
 
     const [message] = await tx
@@ -309,15 +309,29 @@ export const checkUserMembershipInRoom = async (
   return roomMember;
 };
 
-export const updateGroupDescriptionQuery = async (
+export const updateGroupDescriptionTransaction = async (
   roomId: string,
   description: string,
+  adminName: string,
 ) => {
-  const [updatedGroup] = await db
-    .update(groups)
-    .set({ description })
-    .where(eq(groups.roomId, roomId))
-    .returning();
+  return db.transaction(async (tx) => {
+    const [updatedGroup] = await tx
+      .update(groups)
+      .set({ description })
+      .where(eq(groups.roomId, roomId))
+      .returning();
 
-  return updatedGroup ?? null;
+    if (!updatedGroup) return null;
+
+    const [message] = await tx
+      .insert(messages)
+      .values({
+        roomId,
+        type: "announcement",
+        content: `${adminName} updated the group description.`,
+      })
+      .returning();
+
+    return { updatedGroup, message };
+  });
 };

@@ -20,7 +20,7 @@ export function ChatLayoutShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex w-full h-svh overflow-hidden">
       <ResizablePanelGroup orientation="horizontal">
-        <ResizablePanel minSize="20%" maxSize="40%" defaultSize="25%">
+        <ResizablePanel minSize="20%" maxSize="40%" defaultSize="25%" className="border-r border-border">
           <ChatList />
         </ResizablePanel>
         <ResizableHandle />

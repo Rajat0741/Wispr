@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { updateProfile } from "@/features/profile/actions/update-profile";
-import { ProfileRow } from "@/features/profile/components/profile-row";
+import { ItemActions } from "@/components/ui/item";
+import { ProfileItem } from "@/features/profile/components/profile-item";
 import { bioSchema } from "@/features/profile/schema";
 
 interface BioFieldProps {
@@ -42,7 +43,12 @@ export function BioField({ currentBio, onSaved }: BioFieldProps) {
   });
 
   useEffect(() => {
-    if (editing) textareaRef.current?.focus();
+    if (editing && textareaRef.current) {
+      const el = textareaRef.current;
+      el.focus();
+      const length = el.value.length;
+      el.setSelectionRange(length, length);
+    }
   }, [editing]);
 
   const handleEdit = () => {
@@ -77,9 +83,9 @@ export function BioField({ currentBio, onSaved }: BioFieldProps) {
     result.validationErrors?.bio?._errors?.[0];
 
   return (
-    <ProfileRow icon={FileTextIcon} label="Bio">
+    <ProfileItem icon={FileTextIcon} label="Bio">
       {editing ? (
-        <FieldGroup className="gap-2">
+        <FieldGroup className="gap-2 mt-1">
           <Field data-invalid={!!errorMessage}>
             <div className="flex items-start gap-2">
               <Textarea
@@ -91,16 +97,17 @@ export function BioField({ currentBio, onSaved }: BioFieldProps) {
                   setValidationError(null);
                 }}
                 onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSave();
                   if (e.key === "Escape") handleCancel();
                 }}
                 placeholder="Tell us a little about yourself..."
                 maxLength={200}
-                rows={3}
+                rows={1}
                 disabled={isExecuting}
                 aria-invalid={!!errorMessage}
-                className="flex-1 resize-none text-sm"
+                className="flex-1 resize-none text-lg"
               />
-              <div className="flex flex-col gap-1 pt-0.5">
+              <ItemActions className="flex-col gap-1 pt-0.5">
                 <Button
                   size="icon"
                   variant="ghost"
@@ -125,7 +132,7 @@ export function BioField({ currentBio, onSaved }: BioFieldProps) {
                 >
                   <XIcon className="size-4" />
                 </Button>
-              </div>
+              </ItemActions>
             </div>
             <div className="flex items-start justify-between gap-2">
               {errorMessage ? (
@@ -141,7 +148,7 @@ export function BioField({ currentBio, onSaved }: BioFieldProps) {
         </FieldGroup>
       ) : (
         <div className="flex min-w-0 items-start gap-2">
-          <span className="min-w-0 flex-1 font-medium wrap-break-word">
+          <span className="min-w-0 font-medium wrap-break-word">
             {currentBio && currentBio.trim().length > 0 ? (
               <p className="line-clamp-4">{currentBio}</p>
             ) : (
@@ -150,17 +157,19 @@ export function BioField({ currentBio, onSaved }: BioFieldProps) {
               </span>
             )}
           </span>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="size-7 shrink-0 text-muted-foreground hover:text-foreground"
-            onClick={handleEdit}
-            aria-label="Edit bio"
-          >
-            <PencilIcon className="size-3.5" />
-          </Button>
+          <ItemActions>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-7 shrink-0 text-muted-foreground hover:text-foreground"
+              onClick={handleEdit}
+              aria-label="Edit bio"
+            >
+              <PencilIcon className="size-3.5" />
+            </Button>
+          </ItemActions>
         </div>
       )}
-    </ProfileRow>
+    </ProfileItem>
   );
 }

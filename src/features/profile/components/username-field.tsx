@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { updateProfile } from "@/features/profile/actions/update-profile";
-import { ProfileRow } from "@/features/profile/components/profile-row";
+import { ItemActions } from "@/components/ui/item";
+import { ProfileItem } from "@/features/profile/components/profile-item";
 import { usernameSchema } from "@/features/profile/schema";
 
 interface UsernameFieldProps {
@@ -80,7 +81,7 @@ export function UsernameField({
     result.validationErrors?.username?._errors?.[0];
 
   return (
-    <ProfileRow icon={AtSignIcon} label="Username">
+    <ProfileItem icon={AtSignIcon} label="Username">
       {editing ? (
         <FieldGroup className="gap-2">
           <Field data-invalid={!!errorMessage}>
@@ -107,30 +108,32 @@ export function UsernameField({
                   className="h-8 pl-7 text-sm"
                 />
               </div>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
-                onClick={handleSave}
-                disabled={isExecuting}
-                aria-label="Save username"
-              >
-                {isExecuting ? (
-                  <LoaderCircleIcon className="size-4 animate-spin" />
-                ) : (
-                  <CheckIcon className="size-4" />
-                )}
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
-                onClick={handleCancel}
-                disabled={isExecuting}
-                aria-label="Cancel"
-              >
-                <XIcon className="size-4" />
-              </Button>
+              <ItemActions>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={handleSave}
+                  disabled={isExecuting}
+                  aria-label="Save username"
+                >
+                  {isExecuting ? (
+                    <LoaderCircleIcon className="size-4 animate-spin" />
+                  ) : (
+                    <CheckIcon className="size-4" />
+                  )}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={handleCancel}
+                  disabled={isExecuting}
+                  aria-label="Cancel"
+                >
+                  <XIcon className="size-4" />
+                </Button>
+              </ItemActions>
             </div>
             {errorMessage ? (
               <FieldError errors={[{ message: errorMessage }]} />
@@ -152,17 +155,19 @@ export function UsernameField({
               </span>
             )}
           </span>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="size-7 shrink-0 text-muted-foreground hover:text-foreground"
-            onClick={handleEdit}
-            aria-label="Edit username"
-          >
-            <PencilIcon className="size-3.5" />
-          </Button>
+          <ItemActions>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-7 shrink-0 text-muted-foreground hover:text-foreground"
+              onClick={handleEdit}
+              aria-label="Edit username"
+            >
+              <PencilIcon className="size-3.5" />
+            </Button>
+          </ItemActions>
         </div>
       )}
-    </ProfileRow>
+    </ProfileItem>
   );
 }
