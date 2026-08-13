@@ -25,7 +25,7 @@ export function UserAvatar({
 
   const avatar = (
     <Avatar className={cn("size-8", className)}>
-      <AvatarImage src={image ?? undefined} alt={name ?? "User avatar"} />
+      <AvatarImage src={image ?? undefined} alt={name ?? "User avatar"} className="size-full object-cover" />
       <AvatarFallback
         className={cn("text-xs font-semibold", fallbackClassName)}
       >

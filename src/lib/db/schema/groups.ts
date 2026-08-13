@@ -12,6 +12,7 @@ export const groups = pgTable("groups", {
   name: text("name").notNull(),
   description: text("description"),
   groupImage: text("group_image"),
+  groupImageFileId: text("group_image_file_id"),
   createdBy: text("created_by")
     .notNull()
     .references(() => user.id),

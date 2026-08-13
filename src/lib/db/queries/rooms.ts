@@ -232,6 +232,16 @@ export const getRoomById = async (roomId: string) => {
   });
 };
 
+export const getGroupImageFileId = async (
+  roomId: string,
+): Promise<string | null> => {
+  const group = await db.query.groups.findFirst({
+    where: eq(groups.roomId, roomId),
+    columns: { groupImageFileId: true },
+  });
+  return group?.groupImageFileId ?? null;
+};
+
 // exists check for room membership of user
 export const getRoomWithMembers = async (roomId: string, userId: string) => {
   const room = await db.query.rooms.findFirst({
@@ -329,6 +339,43 @@ export const updateGroupDescriptionTransaction = async (
         roomId,
         type: "announcement",
         content: `${adminName} updated the group description.`,
+      })
+      .returning();
+
+    return { updatedGroup, message };
+  });
+};
+
+export const updateGroupImageTransaction = async ({
+  roomId,
+  groupImage,
+  groupImageFileId,
+  adminName,
+}: {
+  roomId: string;
+  groupImage: string | null;
+  groupImageFileId: string | null;
+  adminName: string;
+}) => {
+  return db.transaction(async (tx) => {
+    const [updatedGroup] = await tx
+      .update(groups)
+      .set({ groupImage, groupImageFileId })
+      .where(eq(groups.roomId, roomId))
+      .returning();
+
+    if (!updatedGroup) return null;
+
+    const content = groupImage
+      ? `${adminName} updated the group photo.`
+      : `${adminName} removed the group photo.`;
+
+    const [message] = await tx
+      .insert(messages)
+      .values({
+        roomId,
+        type: "announcement",
+        content,
       })
       .returning();
 

@@ -26,7 +26,7 @@ export function AvatarWithLabel({
   avatarClassName,
   titleClassName,
 }: AvatarWithLabelProps) {
-  const hasLabel = title || subtitle;
+  const hasLabel = title;
 
   return (
     <div

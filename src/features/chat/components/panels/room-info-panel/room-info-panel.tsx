@@ -92,13 +92,7 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
 
   const content = (
     <div className="flex flex-col gap-6 p-4 overflow-y-auto">
-      <RoomInfoHeader
-        title={title}
-        image={image}
-        subtitle={
-          isGroup ? null : otherUser?.username ? `@${otherUser.username}` : null
-        }
-      />
+      <RoomInfoHeader />
 
       {!isGroup && (
         <div className="flex flex-col gap-1.5 rounded-2xl bg-muted/40 p-3.5 border border-border/40">
