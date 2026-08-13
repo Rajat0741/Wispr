@@ -1,7 +1,13 @@
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { searchUsersByUsername } from "@/lib/db/queries/auth";
 import { getUserSession } from "@/lib/getUser";
-import { AppError } from "@/utils/app-error";
+import { handleRouteError } from "@/utils/handle-error";
+
+const usernameSchema = z
+  .string()
+  .trim()
+  .min(3, "Search requires at least 3 characters.");
 
 export async function GET(
   request: Request,
@@ -11,24 +17,10 @@ export async function GET(
 
   try {
     await getUserSession(request.headers);
-    const query = z.string().trim().min(3).parse(username);
+    const query = usernameSchema.parse(username);
     const users = await searchUsersByUsername(query);
-    return Response.json(users);
-
+    return NextResponse.json(users);
   } catch (error) {
-    if (error instanceof AppError) {
-      return Response.json(
-        { error: error.message },
-        { status: error.statusCode },
-      );
-    }
-    if (error instanceof z.ZodError) {
-      return Response.json(
-        { error: "Search requires at least 3 characters." },
-        { status: 400 },
-      );
-    }
-    console.error("Error searching users:", error);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    return handleRouteError(error, "Error searching users:");
   }
 }

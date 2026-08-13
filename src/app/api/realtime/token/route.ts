@@ -1,7 +1,7 @@
 import { SignJWT } from "jose";
 import { NextResponse } from "next/server";
 import { getUserSession } from "@/lib/getUser";
-import { AppError } from "@/utils/app-error";
+import { handleRouteError } from "@/utils/handle-error";
 
 const TOKEN_LIFETIME_SECONDS = 10 * 60;
 
@@ -35,17 +35,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json<RealtimeTokenResponse>({ token, expiresAt });
   } catch (error) {
-    if (error instanceof AppError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.statusCode },
-      );
-    }
-
-    console.error("Failed to mint Supabase Realtime token:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return handleRouteError(error, "Failed to mint Supabase Realtime token:");
   }
 }

@@ -1,6 +1,7 @@
+import { NextResponse } from "next/server";
 import { getRoomsForUser } from "@/lib/db/queries";
 import { getUserSession } from "@/lib/getUser";
-import { AppError } from "@/utils/app-error";
+import { handleRouteError } from "@/utils/handle-error";
 
 export async function GET(request: Request) {
   try {
@@ -25,7 +26,8 @@ export async function GET(request: Request) {
       let image: string | null = null;
 
       if (isDm && room.dm) {
-        const partner = room.dm.user1Id === session.user.id ? room.dm.user2 : room.dm.user1;
+        const partner =
+          room.dm.user1Id === session.user.id ? room.dm.user2 : room.dm.user1;
         name = partner?.name ?? "Direct Message";
         image = partner?.image ?? null;
       } else if (room.group) {
@@ -44,16 +46,8 @@ export async function GET(request: Request) {
       };
     });
 
-    return Response.json(chatRooms);
+    return NextResponse.json(chatRooms);
   } catch (error) {
-    if (error instanceof AppError) {
-      return Response.json(
-        { error: error.message },
-        { status: error.statusCode },
-      );
-    }
-
-    console.error("Error loading chat rooms:", error);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    return handleRouteError(error, "Error loading chat rooms:");
   }
 }

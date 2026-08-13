@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getRoomWithMembers } from "@/lib/db/queries";
 import { getUserSession } from "@/lib/getUser";
-import { AppError } from "@/utils/app-error";
+import { handleRouteError } from "@/utils/handle-error";
 
 const paramsSchema = z.object({ roomId: z.uuid() });
 
@@ -25,18 +25,6 @@ export async function GET(
       group: room.group,
     });
   } catch (err) {
-    if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: "Bad request" }, { status: 400 });
-    }
-    if (err instanceof AppError) {
-      return NextResponse.json(
-        { error: err.message },
-        { status: err.statusCode },
-      );
-    }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return handleRouteError(err);
   }
 }
