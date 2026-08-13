@@ -65,7 +65,7 @@ export function MentionInput({
       suggestionsPlacement="above"
       className="min-h-0 flex-1 mb-2"
       classNames={{
-        control: "relative bg-transparent border-none",
+        control: "relative bg-transparent border-none pb-0.5 pl-2",
         highlighter: "min-h-6 max-h-36 ",
         highlighterSubstring: "text-foreground",
         input:

@@ -28,9 +28,9 @@ export function ChatMessageBubble({
     <Bubble variant={isMine ? "default" : "muted"}>
       <BubbleContent
         className={cn(
-          "max-w-2xl rounded-md px-2",
+          "max-w-full rounded-md px-2",
           isMine &&
-            "data-[slot=bubble-content]:!bg-[var(--chat-message-background,var(--primary))]",
+            "data-[slot=bubble-content]:bg-(--chat-message-background,var(--primary))!",
         )}
       >
         {isReply && (
@@ -54,7 +54,7 @@ export function ChatMessageBubble({
         >
           {renderMentions(message.content)}
         </Streamdown>
-        <span className="mt-1 block text-right text-[10px] text-muted-foreground select-none">
+        <span className="block text-right text-[10px] text-muted-foreground select-none">
           {format(new Date(message.createdAt), "h:mm a")}
         </span>
       </BubbleContent>

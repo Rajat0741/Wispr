@@ -51,17 +51,6 @@ export function ChatInput() {
         {replyTo && <ReplyPreview message={replyTo} onDismiss={clearReplyTo} />}
 
         <div className="flex items-end gap-2">
-          {/* TODO: implement attachment picker */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-10 shrink-0 rounded-full"
-            aria-label="Add attachment"
-            disabled
-          >
-            <Plus className="size-5" />
-          </Button>
 
           <MentionInput
             members={members}
