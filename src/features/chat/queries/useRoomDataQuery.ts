@@ -22,7 +22,12 @@ async function fetchRoomData(roomId: string): Promise<RoomDataQueryResult> {
     `/api/rooms/${roomId}/group`,
   );
 
-  if (error) throw new AppError("Failed to fetch room data.", 500);
+  if (error) {
+    throw new AppError(
+      error.message || "Failed to fetch room data.",
+      error.status || 500,
+    );
+  }
 
   return data;
 }
@@ -31,6 +36,15 @@ export function useRoomDataQuery(roomId: string) {
   return useQuery({
     queryKey: roomDataQueryKey(roomId),
     queryFn: () => fetchRoomData(roomId),
+    retry: (failureCount, error) => {
+      if (
+        error instanceof AppError &&
+        (error.statusCode === 403 || error.statusCode === 404)
+      ) {
+        return false;
+      }
+      return failureCount < 2;
+    },
   });
 }
 

@@ -1,11 +1,16 @@
-import { eq, ilike } from "drizzle-orm";
+import { and, eq, ilike, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
 
-export const searchUsersByUsername = async (
-  query: string,
-  limit: number = 10,
-) => {
+export const searchUsersByUsername = async ({
+  query,
+  excludedUserIds,
+  limit = 10,
+}: {
+  query: string;
+  excludedUserIds: string[];
+  limit?: number;
+}) => {
   const users = await db
     .select({
       id: user.id,
@@ -15,8 +20,14 @@ export const searchUsersByUsername = async (
       bio: user.bio,
     })
     .from(user)
-    .where(ilike(user.username, `%${query}%`))
+    .where(
+      and(
+        ilike(user.username, `%${query}%`),
+        notInArray(user.id, excludedUserIds),
+      ),
+    )
     .limit(limit);
+    
   return users;
 };
 

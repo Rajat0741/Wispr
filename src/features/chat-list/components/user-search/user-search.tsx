@@ -19,6 +19,7 @@ import { useUserSearchQuery } from "@/features/chat-list/queries/search-users";
 interface UserSearchProps {
   onSelectUser: (user: SearchUser) => void;
   selectedUserIds?: string[];
+  excludedUserIds?: string[];
   disabled?: boolean;
   placeholder?: string;
   className?: string;
@@ -27,6 +28,7 @@ interface UserSearchProps {
 export function UserSearch({
   onSelectUser,
   selectedUserIds = [],
+  excludedUserIds,
   disabled = false,
   placeholder = "Search users by username...",
   className = "max-h-[min(20rem,50vh)]",
@@ -42,7 +44,11 @@ export function UserSearch({
     return () => window.clearTimeout(timeoutId);
   }, [input]);
 
-  const { users, isSearching, showSearchError } = useUserSearchQuery(search);
+  const { users, isSearching, showSearchError } = useUserSearchQuery(
+    search,
+    excludedUserIds,
+  );
+
   const selectedSet = new Set(selectedUserIds);
 
   return (

@@ -16,9 +16,26 @@ export async function GET(
   const { username } = await params;
 
   try {
-    await getUserSession(request.headers);
+    const session = await getUserSession(request.headers);
     const query = usernameSchema.parse(username);
-    const users = await searchUsersByUsername(query);
+    const { searchParams } = new URL(request.url);
+
+    const excludeParam = searchParams.get("exclude");
+    const clientExclude = excludeParam
+      ? excludeParam
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean)
+      : [];
+
+    const excludedUserIds = Array.from(
+      new Set([session.user.id, ...clientExclude]),
+    );
+
+    const users = await searchUsersByUsername({
+      query,
+      excludedUserIds,
+    });
     return NextResponse.json(users);
   } catch (error) {
     return handleRouteError(error, "Error searching users:");

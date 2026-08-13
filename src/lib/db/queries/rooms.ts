@@ -335,3 +335,173 @@ export const updateGroupDescriptionTransaction = async (
     return { updatedGroup, message };
   });
 };
+
+export const removeGroupMemberTransaction = async ({
+  roomId,
+  targetUserId,
+  adminName,
+}: {
+  roomId: string;
+  targetUserId: string;
+  adminName: string;
+}) => {
+  return db.transaction(async (tx) => {
+    const group = await tx.query.groups.findFirst({
+      where: eq(groups.roomId, roomId),
+    });
+
+    if (!group) {
+      throw new AppError("Group not found.", 404);
+    }
+
+    if (targetUserId === group.createdBy) {
+      throw new AppError("The group creator cannot be removed.", 400);
+    }
+
+    const targetMember = await tx.query.roomMembers.findFirst({
+      where: and(
+        eq(roomMembers.roomId, roomId),
+        eq(roomMembers.userId, targetUserId),
+      ),
+      with: {
+        user: true,
+      },
+    });
+
+    if (!targetMember) {
+      throw new AppError("Member not found in group.", 404);
+    }
+
+    if (targetMember.role === "admin") {
+      const [result] = await tx
+        .select({ count: count() })
+        .from(roomMembers)
+        .where(
+          and(eq(roomMembers.roomId, roomId), eq(roomMembers.role, "admin")),
+        );
+
+      if ((result?.count ?? 0) <= 1) {
+        throw new AppError("Cannot remove the only admin in the group.", 400);
+      }
+    }
+
+    const targetUserName = targetMember.user?.username
+      ? `@${targetMember.user.username}`
+      : (targetMember.user?.name ?? "a member");
+
+    const [message] = await tx
+      .insert(messages)
+      .values({
+        roomId,
+        type: "announcement",
+        content: `${adminName} removed ${targetUserName} from the group.`,
+      })
+      .returning();
+
+    await tx
+      .delete(roomMembers)
+      .where(
+        and(
+          eq(roomMembers.roomId, roomId),
+          eq(roomMembers.userId, targetUserId),
+        ),
+      );
+
+    return { message, targetUserId };
+  });
+};
+
+export const updateGroupMemberRoleTransaction = async ({
+  roomId,
+  targetUserId,
+  adminName,
+  newRole,
+}: {
+  roomId: string;
+  targetUserId: string;
+  adminName: string;
+  newRole: "admin" | "member";
+}) => {
+  return db.transaction(async (tx) => {
+    const group = await tx.query.groups.findFirst({
+      where: eq(groups.roomId, roomId),
+    });
+
+    if (!group) {
+      throw new AppError("Group not found.", 404);
+    }
+
+    const targetMember = await tx.query.roomMembers.findFirst({
+      where: and(
+        eq(roomMembers.roomId, roomId),
+        eq(roomMembers.userId, targetUserId),
+      ),
+      with: {
+        user: true,
+      },
+    });
+
+    if (!targetMember) {
+      throw new AppError("Member not found in group.", 404);
+    }
+
+    if (targetMember.role === newRole) {
+      throw new AppError(
+        newRole === "admin"
+          ? "User is already an admin."
+          : "User is already a regular member.",
+        400,
+      );
+    }
+
+    if (newRole === "member") {
+      if (targetUserId === group.createdBy) {
+        throw new AppError(
+          "The group creator cannot be dismissed as admin.",
+          400,
+        );
+      }
+
+      const [result] = await tx
+        .select({ count: count() })
+        .from(roomMembers)
+        .where(
+          and(eq(roomMembers.roomId, roomId), eq(roomMembers.role, "admin")),
+        );
+
+      if ((result?.count ?? 0) <= 1) {
+        throw new AppError("Cannot dismiss the only admin in the group.", 400);
+      }
+    }
+
+    await tx
+      .update(roomMembers)
+      .set({ role: newRole })
+      .where(
+        and(
+          eq(roomMembers.roomId, roomId),
+          eq(roomMembers.userId, targetUserId),
+        ),
+      );
+
+    const targetUserName = targetMember.user?.username
+      ? `@${targetMember.user.username}`
+      : (targetMember.user?.name ?? "a member");
+
+    const content =
+      newRole === "admin"
+        ? `${adminName} made ${targetUserName} a group admin.`
+        : `${adminName} dismissed ${targetUserName} as group admin.`;
+
+    const [message] = await tx
+      .insert(messages)
+      .values({
+        roomId,
+        type: "announcement",
+        content,
+      })
+      .returning();
+
+    return { message, targetUserId, newRole };
+  });
+};

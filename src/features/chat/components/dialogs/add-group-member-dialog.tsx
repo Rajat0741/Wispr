@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useRoomData } from "@/features/chat/queries/useRoomData";
 import type { SearchUser } from "@/features/chat-list/components/user-search/user-item";
 import { UserSearch } from "@/features/chat-list/components/user-search/user-search";
 import { addGroupMember } from "@/features/common/actions/add-group-member";
@@ -25,6 +26,8 @@ export function AddGroupMemberDialog({
   onOpenChange: (open: boolean) => void;
   roomId: string;
 }) {
+  const { members } = useRoomData();
+  const existingMemberIds = members.map((m) => m.id);
   const [selectedUsers, setSelectedUsers] = useState<SearchUser[]>([]);
   const { execute, isExecuting, result } = useAction(addGroupMember, {
     onSuccess: () => {
@@ -53,6 +56,7 @@ export function AddGroupMemberDialog({
         />
 
         <UserSearch
+          excludedUserIds={existingMemberIds}
           onSelectUser={(user) =>
             setSelectedUsers((users) =>
               users.some((selected) => selected.id === user.id)

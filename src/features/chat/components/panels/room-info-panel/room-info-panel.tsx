@@ -138,13 +138,21 @@ export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
             )}
           </div>
           <p className="text-sm text-foreground wrap-break-word line-clamp-4 min-w-0 w-full">
-            {group?.description?.trim() ? group.description : "No description set"}
+            {group?.description?.trim()
+              ? group.description
+              : "No description set"}
           </p>
         </div>
       )}
 
       {isGroup && members.length > 0 && (
-        <RoomMemberList members={members} currentUserId={currentUserId} />
+        <RoomMemberList
+          members={members}
+          currentUserId={currentUserId}
+          roomId={roomId}
+          group={group}
+          isAdmin={isAdmin}
+        />
       )}
 
       <div className="mt-auto pt-4 border-t border-border/40 flex flex-col gap-2">

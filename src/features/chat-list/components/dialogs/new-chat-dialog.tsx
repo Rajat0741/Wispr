@@ -41,7 +41,7 @@ export function NewChat() {
         onOpenChange={setOpen}
         title="New chat"
         description="Search for a user to start a direct message."
-        className="sm:max-w-lg"
+        className="top-8 sm:max-w-lg sm:top-1/3"
       >
         <UserSearch
           disabled={isExecuting}
