@@ -4,16 +4,53 @@ import {
   IMAGEKIT_FOLDERS,
 } from "@/lib/imagekit/constants";
 
+const MIME_TO_EXTENSION: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/heic": "heic",
+  "image/heif": "heif",
+};
+
+const HEIC_EXTENSIONS = [".heic", ".heif"];
+
+function isHeicByExtension(fileName: string): boolean {
+  const lower = fileName.toLowerCase();
+  return HEIC_EXTENSIONS.some((ext) => lower.endsWith(ext));
+}
+
+function isAllowedFile(file: File): boolean {
+  const allowedTypes = IMAGE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES as readonly string[];
+  if (allowedTypes.includes(file.type)) return true;
+  // Fallback: some browsers report empty/generic type for HEIC/HEIF
+  if (!file.type && isHeicByExtension(file.name)) return true;
+  return false;
+}
+
+function getSafeFileName(file: File): string {
+  const baseName = file.name.replace(/\.[^/.]+$/, "");
+
+  if (MIME_TO_EXTENSION[file.type]) {
+    return `${baseName}.${MIME_TO_EXTENSION[file.type]}`;
+  }
+
+  // file.type empty but extension indicates HEIC/HEIF
+  if (isHeicByExtension(file.name)) {
+    const ext = file.name.toLowerCase().endsWith(".heif") ? "heif" : "heic";
+    return `${baseName}.${ext}`;
+  }
+
+  return file.name;
+}
+
 export async function uploadToImageKit(
   file: File,
   folder: string = IMAGEKIT_FOLDERS.GROUP_DP,
 ): Promise<{ url: string; fileId: string }> {
-  const isAllowed = (
-    IMAGE_UPLOAD_CONSTRAINTS.ALLOWED_TYPES as readonly string[]
-  ).includes(file.type);
-
-  if (!isAllowed) {
-    throw new Error("Invalid file type. Please upload a JPEG, PNG, or WebP image.");
+  if (!isAllowedFile(file)) {
+    throw new Error(
+      "Invalid file type. Please upload a JPEG, PNG, WebP, or HEIC/HEIF image.",
+    );
   }
 
   if (file.size > IMAGE_UPLOAD_CONSTRAINTS.MAX_SIZE_BYTES) {
@@ -35,7 +72,7 @@ export async function uploadToImageKit(
 
   const response = await upload({
     file,
-    fileName: file.name,
+    fileName: getSafeFileName(file),
     token,
     expire,
     signature,

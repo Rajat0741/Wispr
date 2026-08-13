@@ -10,5 +10,7 @@ export const IMAGE_UPLOAD_CONSTRAINTS = {
     "image/jpeg",
     "image/png",
     "image/webp",
+    "image/heic",
+    "image/heif",
   ] as const,
 } as const;
