@@ -29,8 +29,9 @@ export function ChatMessageBubble({
       <BubbleContent
         className={cn(
           "max-w-full rounded-md px-2",
-          isMine &&
-            "data-[slot=bubble-content]:bg-(--chat-message-background,var(--primary))!",
+          isMine
+            ? "data-[slot=bubble-content]:bg-(--chat-message-background,var(--primary))!  rounded-br-none"
+            : "rounded-bl-none",
         )}
       >
         {isReply && (

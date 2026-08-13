@@ -20,8 +20,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { EditGroupDescriptionDialog } from "@/features/chat/components/dialogs/edit-group-description-dialog";
-import { useChatStore } from "@/features/chat/components/layout/chat-provider";
-import { useRoomDataQuery } from "@/features/chat/queries/useRoomDataQuery";
+import { useRoomData } from "@/features/chat/queries/useRoomData";
 import { deleteChat } from "@/features/common/actions/delete-chat";
 import { leaveGroup } from "@/features/common/actions/leave-group";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -35,15 +34,16 @@ type RoomInfoPanelProps = {
 };
 
 export function RoomInfoPanel({ open, onOpenChange }: RoomInfoPanelProps) {
-  const title = useChatStore((s) => s.title);
-  const image = useChatStore((s) => s.image);
-  const subtitle = useChatStore((s) => s.subtitle);
-  const members = useChatStore((s) => s.members);
-  const roomType = useChatStore((s) => s.roomType);
-  const currentUserId = useChatStore((s) => s.currentUserId);
-  const roomId = useChatStore((s) => s.roomId);
-
-  const { data: group } = useRoomDataQuery(roomId);
+  const {
+    title,
+    image,
+    subtitle,
+    members,
+    roomType,
+    currentUserId,
+    roomId,
+    group,
+  } = useRoomData();
 
   const isMobile = useIsMobile();
   const isGroup = roomType === "group";

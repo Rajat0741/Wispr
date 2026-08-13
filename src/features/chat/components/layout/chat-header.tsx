@@ -2,9 +2,10 @@
 
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useChatStore } from "@/features/chat/components/layout/chat-provider";
+import { useRoomData } from "@/features/chat/queries/useRoomData";
 import { AvatarWithLabel } from "@/features/common/components/avatar-with-label";
 import { ChatHeaderActions } from "../actions/chat-header-actions";
+import { ChatHeaderSkeleton } from "../skeletons/chat-header-skeleton";
 
 export function ChatHeader({
   onClick,
@@ -13,9 +14,11 @@ export function ChatHeader({
   onClick?: () => void;
   onBack?: () => void;
 }) {
-  const title = useChatStore((s) => s.title);
-  const image = useChatStore((s) => s.image);
-  const subtitle = useChatStore((s) => s.subtitle);
+  const { title, image, subtitle, isPending } = useRoomData();
+
+  if (isPending) {
+    return <ChatHeaderSkeleton onBack={onBack} />;
+  }
 
   return (
     <header className="flex items-center border-b px-4 py-2">

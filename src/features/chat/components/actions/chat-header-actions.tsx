@@ -19,8 +19,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/toast";
-import { useChatStore } from "@/features/chat/components/layout/chat-provider";
 import { CHAT_ROOMS_KEY } from "@/features/chat-list/queries/get-chat-rooms";
+import { useRoomData } from "@/features/chat/queries/useRoomData";
 import { leaveGroup } from "@/features/common/actions/leave-group";
 import { useConfirm } from "@/lib/providers/confirm-dialog-provider";
 import { AddGroupMemberDialog } from "../dialogs/add-group-member-dialog";
@@ -34,10 +34,7 @@ export function ChatHeaderActions({
   onOpenInfo,
   className,
 }: ChatHeaderActionsProps) {
-  const roomId = useChatStore((s) => s.roomId);
-  const roomType = useChatStore((s) => s.roomType);
-  const members = useChatStore((s) => s.members);
-  const currentUserId = useChatStore((s) => s.currentUserId);
+  const { roomId, roomType, members, currentUserId } = useRoomData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();

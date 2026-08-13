@@ -48,6 +48,7 @@ export const addGroupMember = roomActionClient
           replyToMessage: null,
         },
       );
+      await broadcastToRoom(roomId, CHAT_EVENTS.ROOM_DATA_UPDATED, { roomId });
       await broadcastToUsers(
         await getRoomMemberIds(roomId),
         CHAT_EVENTS.CHAT_LIST_UPDATED,

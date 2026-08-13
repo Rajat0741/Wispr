@@ -14,19 +14,10 @@ export default async function RoomPage({
   const { roomId } = await params;
   if (!z.uuid().safeParse(roomId).success) notFound();
 
-  const roomData = await getRoomWithMembers(roomId, session.user.id);
-  if (!roomData) notFound();
-
-  const { room } = roomData;
+  if (!(await getRoomWithMembers(roomId, session.user.id))) notFound();
 
   return (
-    <ChatProvider
-      roomId={roomId}
-      currentUserId={session.user.id}
-      roomType={room.roomType}
-      members={room.members.map(({ user, role }) => ({ ...user, role }))}
-      group={room.group}
-    >
+    <ChatProvider roomId={roomId}>
       <RoomChat key={roomId} />
     </ChatProvider>
   );

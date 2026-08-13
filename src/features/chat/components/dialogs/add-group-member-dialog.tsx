@@ -1,7 +1,6 @@
 "use client";
 
 import { LoaderCircleIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -26,13 +25,11 @@ export function AddGroupMemberDialog({
   onOpenChange: (open: boolean) => void;
   roomId: string;
 }) {
-  const router = useRouter();
   const [selectedUsers, setSelectedUsers] = useState<SearchUser[]>([]);
   const { execute, isExecuting, result } = useAction(addGroupMember, {
     onSuccess: () => {
       setSelectedUsers([]);
       onOpenChange(false);
-      router.refresh();
     },
   });
 

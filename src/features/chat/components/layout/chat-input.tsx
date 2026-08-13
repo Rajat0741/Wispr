@@ -1,18 +1,19 @@
 "use client";
 
-import { Plus, SendIcon } from "lucide-react";
+import { SendIcon } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { sendMessage } from "@/features/chat/actions/sendMessage";
 import { useChatStore } from "@/features/chat/components/layout/chat-provider";
+import { useRoomData } from "@/features/chat/queries/useRoomData";
 import { ReplyPreview } from "../messages/reply-preview";
 import { MentionInput } from "./mention-input";
 
 export function ChatInput() {
   const formRef = useRef<HTMLFormElement>(null);
   const roomId = useChatStore((s) => s.roomId);
-  const members = useChatStore((s) => s.members);
+  const { members } = useRoomData();
   const replyTo = useChatStore((s) => s.replyTo);
   const clearReplyTo = useChatStore((s) => s.clearReplyTo);
 

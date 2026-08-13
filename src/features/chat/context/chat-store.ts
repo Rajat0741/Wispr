@@ -1,28 +1,8 @@
 import { createStore, type StoreApi } from "zustand";
 import type { MessageWithSender } from "@/features/chat/types";
-import { getRoomMetadata } from "@/features/chat/utils/getRoomMetadata";
-import type { GroupType } from "@/lib/db/schema";
-import type { User } from "@/types/user";
 
-export type RoomMember = User & { role: "admin" | "member" | null };
-
-export interface RoomData {
+export interface ChatState {
   roomId: string;
-  currentUserId: string;
-  roomType: "dm" | "group";
-  members: RoomMember[];
-  /**
-   * group is kept in RoomData so the initial title/image can be derived
-   * server-side, but it is NOT the live source of truth for group metadata.
-   * Use useRoomDataQuery for reactive group data.
-   */
-  group: GroupType | null;
-}
-
-export interface ChatState extends RoomData {
-  title: string;
-  image: string | null;
-  subtitle: string | null;
   replyTo: MessageWithSender | null;
 
   setReplyTo: (message: MessageWithSender | null) => void;
@@ -31,24 +11,10 @@ export interface ChatState extends RoomData {
 
 export type ChatStore = StoreApi<ChatState>;
 
-/**
- * Creates an isolated Zustand store instance for a single conversation.
- * Using `createStore` (not `create`) ensures no global singleton is shared
- * across conversations — each ChatProvider mounts its own instance.
- */
-export const createChatStore = (initialData: RoomData): ChatStore => {
-  const { title, image, subtitle } = getRoomMetadata(
-    initialData.roomType,
-    initialData.members,
-    initialData.currentUserId,
-    initialData.group,
-  );
-
+/** Creates an isolated store for local state in a single conversation. */
+export const createChatStore = (roomId: string): ChatStore => {
   return createStore<ChatState>()((set) => ({
-    ...initialData,
-    title,
-    image,
-    subtitle,
+    roomId,
     replyTo: null,
 
     setReplyTo: (message) => set({ replyTo: message }),

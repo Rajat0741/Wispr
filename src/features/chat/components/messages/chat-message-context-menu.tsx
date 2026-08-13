@@ -13,6 +13,7 @@ import {
 import { toast } from "@/components/ui/toast";
 import { deleteMessage } from "@/features/chat/actions/deleteMessage";
 import { useChatStore } from "@/features/chat/components/layout/chat-provider";
+import { useRoomData } from "@/features/chat/queries/useRoomData";
 import type { MessageWithSender } from "@/features/chat/types";
 import { authClient } from "@/lib/auth-client";
 import { useConfirm } from "@/lib/providers/confirm-dialog-provider";
@@ -31,7 +32,7 @@ export function ChatMessageContextMenu({
 
   const setReplyTo = useChatStore((s) => s.setReplyTo);
   const roomId = useChatStore((s) => s.roomId);
-  const members = useChatStore((s) => s.members);
+  const { members } = useRoomData();
 
   const confirm = useConfirm();
 

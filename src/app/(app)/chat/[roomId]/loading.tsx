@@ -5,10 +5,12 @@ export default function ChatRoomLoading() {
     <div className="flex h-full w-full flex-col bg-background">
       {/* Header Skeleton */}
       <header className="flex items-center gap-3 border-b px-4 py-3 shrink-0">
-        <Skeleton className="size-8 rounded-full" />
-        <div className="space-y-1.5 min-w-0">
-          <Skeleton className="h-4 w-32 rounded-md" />
-          <Skeleton className="h-3 w-48 rounded-md" />
+        <div className="flex flex-1 items-center gap-3 min-w-0 p-1.5 -mx-1.5">
+          <Skeleton className="size-9 rounded-full shrink-0" />
+          <div className="space-y-1.5 min-w-0">
+            <Skeleton className="h-4 w-32 rounded-md" />
+            <Skeleton className="h-3 w-48 rounded-md" />
+          </div>
         </div>
       </header>
 

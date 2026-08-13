@@ -26,6 +26,7 @@ import {
   useMessageScrollerScrollable,
 } from "@/components/ui/message-scroller";
 import { useChatStore } from "@/features/chat/components/layout/chat-provider";
+import { useRoomData } from "@/features/chat/queries/useRoomData";
 import { useMessages } from "@/features/chat/queries/useMessages";
 import type { MessageWithSender } from "@/features/chat/types";
 import { groupMessagesByDate } from "@/features/chat/utils/groupMessagesByDate";
@@ -47,8 +48,7 @@ export function ChatMessages() {
 
 function ChatMessageList() {
   const roomId = useChatStore((s) => s.roomId);
-  const roomType = useChatStore((s) => s.roomType);
-  const currentUserId = useChatStore((s) => s.currentUserId);
+  const { roomType, currentUserId } = useRoomData();
 
   const {
     messages,
@@ -174,15 +174,6 @@ function ChatMessageList() {
                           </MessageAvatar>
                         )}
                         <MessageContent>
-                          {roomType === "group" &&
-                            !isMine &&
-                            message.sender?.name && (
-                              <MessageHeader className="text-xs">
-                                <span className="font-semibold text-foreground">
-                                  {message.sender.name}
-                                </span>
-                              </MessageHeader>
-                            )}
                           <ChatMessageContextMenu message={message}>
                             <ChatMessageBubble
                               message={message}

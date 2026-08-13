@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent } from "react";
 import { Mention, MentionsInput } from "react-mentions-ts";
-import type { RoomMember } from "@/features/chat/context/chat-store";
+import type { RoomMember } from "@/features/chat/queries/useRoomDataQuery";
 import { UserAvatar } from "@/features/common/components/user-avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 
