@@ -1,17 +1,19 @@
 import { and, eq, ilike, notInArray } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { db, type TransactionScope } from "@/lib/db";
 import { user } from "@/lib/db/schema";
 
 export const searchUsersByUsername = async ({
   query,
   excludedUserIds,
   limit = 10,
+  executor = db,
 }: {
   query: string;
   excludedUserIds: string[];
   limit?: number;
+  executor?: TransactionScope;
 }) => {
-  const users = await db
+  const users = await executor
     .select({
       id: user.id,
       username: user.username,
@@ -27,12 +29,15 @@ export const searchUsersByUsername = async ({
       ),
     )
     .limit(limit);
-    
+
   return users;
 };
 
-export const getUserByUsername = async (username: string) => {
-  const [foundUser] = await db
+export const getUserByUsername = async (
+  username: string,
+  executor: TransactionScope = db,
+) => {
+  const [foundUser] = await executor
     .select({
       id: user.id,
       name: user.name,
@@ -49,8 +54,11 @@ export const getUserByUsername = async (username: string) => {
   return foundUser ?? null;
 };
 
-export const getUserById = async (id: string) => {
-  const [foundUser] = await db
+export const getUserById = async (
+  id: string,
+  executor: TransactionScope = db,
+) => {
+  const [foundUser] = await executor
     .select({
       id: user.id,
       name: user.name,

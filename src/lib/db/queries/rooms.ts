@@ -1,6 +1,6 @@
 import { and, count, eq, exists, inArray } from "drizzle-orm";
 import { AppError } from "@/utils/app-error";
-import { db } from "../index";
+import { db, type TransactionScope } from "../index";
 import {
   user as authUser,
   dms,
@@ -174,8 +174,11 @@ export const createDmTransaction = async ({
   });
 };
 
-export const deleteRoom = async (roomId: string) => {
-  await db.delete(rooms).where(eq(rooms.id, roomId));
+export const deleteRoom = async (
+  roomId: string,
+  executor: TransactionScope = db,
+) => {
+  await executor.delete(rooms).where(eq(rooms.id, roomId));
 };
 
 export const leaveGroupTransaction = async (

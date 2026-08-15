@@ -1,6 +1,6 @@
 import { and, eq, lt } from "drizzle-orm";
 import type z from "zod";
-import { db } from "@/lib/db";
+import { db, type TransactionScope } from "@/lib/db";
 import { type insertMessageSchema, messages } from "../schema";
 
 const MESSAGE_PAGE_SIZE = 50;
@@ -41,8 +41,9 @@ const defaultMessageWithRelations = {
 
 export const createMessage = async (
   messageData: z.infer<typeof insertMessageSchema>,
+  executor: TransactionScope = db,
 ) => {
-  const response = await db.insert(messages).values(messageData).returning();
+  const response = await executor.insert(messages).values(messageData).returning();
   return response[0];
 };
 
@@ -83,8 +84,9 @@ export const getRoomMessagesPaginated = async (
 export const deleteMessageInRoom = async (
   roomId: string,
   messageId: string,
+  executor: TransactionScope = db,
 ) => {
-  await db
+  await executor
     .update(messages)
     .set({ isDeleted: true, content: "Deleted Message" })
     .where(and(eq(messages.roomId, roomId), eq(messages.id, messageId)));
