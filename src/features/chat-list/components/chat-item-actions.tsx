@@ -81,23 +81,38 @@ export function ChatItemActions({
         : "This will permanently delete messages for both participants.",
       confirmLabel: actionLabel,
       onConfirm: async () => {
-        await (isGroup ? executeLeaveAsync({ roomId }) : executeDeleteAsync({ roomId }));
+        await (isGroup
+          ? executeLeaveAsync({ roomId })
+          : executeDeleteAsync({ roomId }));
       },
     });
+
+  const stopBubbling = (event: React.SyntheticEvent) => event.stopPropagation();
 
   return (
     <DropdownMenu onOpenChange={onOpenChange}>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="icon-xs" className={cn(className)} />
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className={cn(className)}
+            onClick={stopBubbling}
+            onKeyDown={stopBubbling}
+            onTouchStart={stopBubbling}
+            onTouchEnd={stopBubbling}
+          />
         }
         aria-label={`Actions for ${roomName}`}
-        onClick={(event) => event.stopPropagation()}
-        onPointerDown={(event) => event.stopPropagation()}
       >
         <MoreHorizontalIcon />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" side="right">
+      <DropdownMenuContent
+        align="start"
+        side="right"
+        onClick={stopBubbling}
+        onKeyDown={stopBubbling}
+      >
         <DropdownMenuItem onClick={() => router.push(`/chat/${roomId}`)}>
           <MessageCircleIcon />
           Open chat
@@ -110,10 +125,7 @@ export function ChatItemActions({
           {isPinned ? "Unpin" : "Pin"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          variant="destructive"
-          onClick={handleLeaveOrDelete}
-        >
+        <DropdownMenuItem variant="destructive" onClick={handleLeaveOrDelete}>
           <Trash2Icon />
           {actionLabel}
         </DropdownMenuItem>
