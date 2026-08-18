@@ -1,8 +1,8 @@
 "use client";
 
-import { CopyIcon, ReplyIcon, Trash2Icon } from "lucide-react";
+import { CopyIcon, ForwardIcon, ReplyIcon, Trash2Icon } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -17,6 +17,7 @@ import { useRoomData } from "@/features/chat/queries/useRoomData";
 import type { MessageWithSender } from "@/features/chat/types";
 import { authClient } from "@/lib/auth-client";
 import { useConfirm } from "@/lib/providers/confirm-dialog-provider";
+import { ForwardDialog } from "./forward-dialog";
 
 interface ChatMessageContextMenuProps {
   message: MessageWithSender;
@@ -35,6 +36,7 @@ export function ChatMessageContextMenu({
   const { members } = useRoomData();
 
   const confirm = useConfirm();
+  const [isForwardDialogOpen, setIsForwardDialogOpen] = React.useState(false);
 
   const isSender = Boolean(currentUserId && message.senderId === currentUserId);
   const currentUserMember = members.find((m) => m.id === currentUserId);
@@ -68,6 +70,10 @@ export function ChatMessageContextMenu({
     setReplyTo(message);
   };
 
+  const handleForward = () => {
+    setIsForwardDialogOpen(true);
+  };
+
   const handleDelete = () => {
     confirm({
       title: "Delete message?",
@@ -81,27 +87,38 @@ export function ChatMessageContextMenu({
   };
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger>{children}</ContextMenuTrigger>
-      <ContextMenuContent>
-        <ContextMenuItem onClick={handleCopy}>
-          <CopyIcon />
-          Copy
-        </ContextMenuItem>
-        <ContextMenuItem onClick={handleReply}>
-          <ReplyIcon />
-          Reply
-        </ContextMenuItem>
-        {canDelete && (
-          <>
-            <ContextMenuSeparator />
-            <ContextMenuItem variant="destructive" onClick={handleDelete}>
-              <Trash2Icon />
-              Delete
-            </ContextMenuItem>
-          </>
-        )}
-      </ContextMenuContent>
-    </ContextMenu>
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger>{children}</ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem onClick={handleCopy}>
+            <CopyIcon />
+            Copy
+          </ContextMenuItem>
+          <ContextMenuItem onClick={handleReply}>
+            <ReplyIcon />
+            Reply
+          </ContextMenuItem>
+          <ContextMenuItem onClick={handleForward}>
+            <ForwardIcon />
+            Forward
+          </ContextMenuItem>
+          {canDelete && (
+            <>
+              <ContextMenuSeparator />
+              <ContextMenuItem variant="destructive" onClick={handleDelete}>
+                <Trash2Icon />
+                Delete
+              </ContextMenuItem>
+            </>
+          )}
+        </ContextMenuContent>
+      </ContextMenu>
+      <ForwardDialog
+        messageId={message.id}
+        open={isForwardDialogOpen}
+        onOpenChange={setIsForwardDialogOpen}
+      />
+    </>
   );
 }

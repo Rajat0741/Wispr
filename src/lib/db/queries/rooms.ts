@@ -311,6 +311,14 @@ export const getRoomMemberIds = async (roomId: string) => {
   return members.map(({ userId }) => userId);
 };
 
+export const getRoomMembersForRooms = async (roomIds: string[]) => {
+  if (roomIds.length === 0) return [];
+  return db
+    .select({ roomId: roomMembers.roomId, userId: roomMembers.userId })
+    .from(roomMembers)
+    .where(inArray(roomMembers.roomId, roomIds));
+};
+
 export const checkUserMembershipInRoom = async (
   roomId: string,
   userId: string,

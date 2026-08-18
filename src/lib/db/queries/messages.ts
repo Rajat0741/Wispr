@@ -39,12 +39,12 @@ const defaultMessageWithRelations = {
   },
 } as const;
 
-export const createMessage = async (
-  messageData: z.infer<typeof insertMessageSchema>,
+export const createMessages = async (
+  messagesData: z.infer<typeof insertMessageSchema>[],
   executor: TransactionScope = db,
 ) => {
-  const response = await executor.insert(messages).values(messageData).returning();
-  return response[0];
+  if (messagesData.length === 0) return [];
+  return executor.insert(messages).values(messagesData).returning();
 };
 
 export const getMessageById = async (roomId: string, messageId: string) =>

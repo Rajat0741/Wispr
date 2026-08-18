@@ -65,11 +65,11 @@ export function MentionInput({
       suggestionsPlacement="above"
       className="min-h-0 flex-1 mb-2"
       classNames={{
-        control: "relative bg-transparent border-none pb-0.5 pl-2",
+        control: "relative bg-transparent border-none pb-0.5 ml-2",
         highlighter: "min-h-6 max-h-36 ",
         highlighterSubstring: "text-foreground",
         input:
-          "min-h-6 max-h-36 resize-none border-0 bg-transparent px-0 leading-6 outline-none text-transparent caret-foreground placeholder:text-muted-foreground focus-visible:ring-0 [field-sizing:content]",
+          "min-h-6 max-h-36 resize-none border-0 bg-transparent px-0 outline-none text-transparent caret-foreground placeholder:text-muted-foreground focus-visible:ring-0 [field-sizing:content]",
         suggestions:
           "mb-1 rounded-xl border bg-popover p-1 text-popover-foreground shadow-md",
         suggestionsList: "max-h-64 overflow-y-auto",

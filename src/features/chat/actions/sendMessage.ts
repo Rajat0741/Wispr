@@ -4,7 +4,7 @@ import z from "zod";
 import { CHAT_EVENTS } from "@/features/chat/constants";
 import type { MessageWithSender } from "@/features/chat/types";
 import {
-  createMessage,
+  createMessages,
   getMessageById,
   getRoomMemberIds,
 } from "@/lib/db/queries";
@@ -42,13 +42,15 @@ export const sendMessage = roomActionClient
         );
       }
 
-      const newMessage = await createMessage({
-        roomId,
-        senderId: user.id,
-        content: message,
-        type,
-        replyTo: replyTo ?? null,
-      });
+      const [newMessage] = await createMessages([
+        {
+          roomId,
+          senderId: user.id,
+          content: message,
+          type,
+          replyTo: replyTo ?? null,
+        },
+      ]);
 
       const messageWithSender: MessageWithSender = {
         ...newMessage,
